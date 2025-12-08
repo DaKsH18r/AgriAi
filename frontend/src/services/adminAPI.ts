@@ -1,0 +1,103 @@
+/**
+ * Admin API service functions
+ */
+
+import axios from "axios";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+
+// Create axios instance with auth token
+const createAuthClient = () => {
+  const token = localStorage.getItem("token");
+  return axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
+    },
+  });
+};
+
+export interface PlatformStats {
+  total_users: number;
+  active_users: number;
+  total_analyses: number;
+  analyses_today: number;
+  total_predictions: number;
+}
+
+export interface AdminUser {
+  id: number;
+  email: string;
+  full_name: string | null;
+  is_active: boolean;
+  is_superuser: boolean;
+  created_at: string;
+  location: string | null;
+  favorite_crops: string[] | null;
+}
+
+export interface SystemLog {
+  id: number;
+  timestamp: string;
+  level: "info" | "warning" | "error";
+  action: string;
+  user: string;
+}
+
+export const adminAPI = {
+  // Get platform statistics
+  getStats: async (): Promise<PlatformStats> => {
+    const client = createAuthClient();
+    const response = await client.get("/admin/stats");
+    return response.data;
+  },
+
+  // Get users list with pagination
+  getUsers: async (
+    skip: number = 0,
+    limit: number = 10,
+    search?: string
+  ): Promise<AdminUser[]> => {
+    const client = createAuthClient();
+    const params: Record<string, string | number> = { skip, limit };
+    if (search) params.search = search;
+
+    const response = await client.get("/admin/users", { params });
+    return response.data;
+  },
+
+  // Update user status (activate/deactivate)
+  updateUserStatus: async (userId: number, isActive: boolean) => {
+    const client = createAuthClient();
+    const response = await client.put(`/admin/users/${userId}/status`, null, {
+      params: { is_active: isActive },
+    });
+    return response.data;
+  },
+
+  // Delete user
+  deleteUser: async (userId: number) => {
+    const client = createAuthClient();
+    const response = await client.delete(`/admin/users/${userId}`);
+    return response.data;
+  },
+
+  // Get system logs
+  getLogs: async (limit: number = 50, level?: string): Promise<SystemLog[]> => {
+    const client = createAuthClient();
+    const params: Record<string, string | number> = { limit };
+    if (level) params.level = level;
+
+    const response = await client.get("/admin/logs", { params });
+    return response.data;
+  },
+
+  // Health check
+  checkHealth: async () => {
+    const client = createAuthClient();
+    const response = await client.get("/admin/health");
+    return response.data;
+  },
+};

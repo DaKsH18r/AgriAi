@@ -1,0 +1,26 @@
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-dotenv
+pydantic-settings
+pydantic[email]
+slowapi
+alembic
+sendgrid  # For email service (optional)
+authlib  # For OAuth (Google, GitHub, etc.)
+httpx  # Required by authlib
+itsdangerous  # Required by SessionMiddleware for OAuth
+requests
+pandas
+numpy
+scikit-learn
+statsmodels
+google-generativeai
+APScheduler
+twilio
+redis>=5.0.0
+hiredis  # C parser for Redis (performance boost)

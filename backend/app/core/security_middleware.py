@@ -1,0 +1,132 @@
+"""
+Security middleware for enhanced protection
+"""
+
+from fastapi import Request, HTTPException, status
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+import re
+from typing import Callable
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Add security headers to all responses"""
+    
+    async def dispatch(self, request: Request, call_next: Callable):
+        response = await call_next(request)
+        
+        # Security headers
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+        response.headers["Content-Security-Policy"] = "default-src 'self'"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        
+        return response
+
+
+class InputValidationMiddleware(BaseHTTPMiddleware):
+    """Validate and sanitize inputs to prevent injection attacks"""
+    
+    # Dangerous patterns to block
+    SQL_INJECTION_PATTERNS = [
+        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)",
+        r"(--|\#|\/\*|\*\/)",
+        r"(\bOR\b.*=.*)",
+        r"(\bAND\b.*=.*)",
+        r"(UNION.*SELECT)",
+        r"(;\s*(DROP|DELETE|UPDATE))",
+    ]
+    
+    XSS_PATTERNS = [
+        r"<script[^>]*>.*?</script>",
+        r"javascript:",
+        r"on\w+\s*=",
+        r"<iframe",
+        r"<object",
+        r"<embed",
+    ]
+    
+    async def dispatch(self, request: Request, call_next: Callable):
+        # Skip validation for OAuth callbacks (Google sends encoded tokens)
+        if "/api/auth/google/callback" in request.url.path:
+            return await call_next(request)
+        
+        # Skip validation for all auth endpoints (they handle their own validation)
+        if "/api/auth/" in request.url.path or "/api/v1/auth/" in request.url.path:
+            return await call_next(request)
+        
+        # Skip validation for GET requests without query params
+        if request.method == "GET" and not request.url.query:
+            return await call_next(request)
+        
+        # Check query parameters
+        if request.url.query:
+            for param, value in request.query_params.items():
+                if self._is_malicious(str(value)):
+                    logger.warning(f"Malicious input detected in query param: {param}")
+                    return JSONResponse(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        content={"detail": "Invalid input detected"}
+                    )
+        
+        # Check request body for POST/PUT/PATCH
+        if request.method in ["POST", "PUT", "PATCH"]:
+            try:
+                body = await request.body()
+                if body:
+                    body_str = body.decode('utf-8')
+                    if self._is_malicious(body_str):
+                        logger.warning(f"Malicious input detected in request body")
+                        return JSONResponse(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            content={"detail": "Invalid input detected"}
+                        )
+                    
+                    # Restore body for next middleware
+                    async def receive():
+                        return {"type": "http.request", "body": body}
+                    request._receive = receive
+            except Exception as e:
+                logger.error(f"Error validating request body: {e}")
+        
+        return await call_next(request)
+    
+    def _is_malicious(self, text: str) -> bool:
+        """Check if text contains malicious patterns"""
+        text_upper = text.upper()
+        
+        # Check SQL injection patterns
+        for pattern in self.SQL_INJECTION_PATTERNS:
+            if re.search(pattern, text_upper, re.IGNORECASE):
+                return True
+        
+        # Check XSS patterns
+        for pattern in self.XSS_PATTERNS:
+            if re.search(pattern, text, re.IGNORECASE):
+                return True
+        
+        return False
+
+
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    """Limit request size to prevent DoS attacks"""
+    
+    MAX_REQUEST_SIZE = 10 * 1024 * 1024  # 10MB
+    
+    async def dispatch(self, request: Request, call_next: Callable):
+        # Check Content-Length header
+        content_length = request.headers.get("content-length")
+        if content_length:
+            if int(content_length) > self.MAX_REQUEST_SIZE:
+                return JSONResponse(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    content={"detail": "Request too large"}
+                )
+        
+        return await call_next(request)

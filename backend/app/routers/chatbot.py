@@ -1,0 +1,67 @@
+from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel
+from app.services.chatbot_service import ChatbotService
+from typing import List, Optional
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from app.core.logging_config import logger
+
+router = APIRouter()
+chatbot_service = ChatbotService()
+limiter = Limiter(key_func=get_remote_address)
+
+class ChatMessage(BaseModel):
+    role: str  # 'user' or 'assistant'
+    content: str
+
+class ChatRequest(BaseModel):
+    message: str
+    history: Optional[List[ChatMessage]] = []
+
+class ChatResponse(BaseModel):
+    response: str
+    timestamp: str
+
+@router.post("/ask", response_model=ChatResponse)
+@limiter.limit("100/hour")  # Allow real conversations with farmers
+async def ask_question(request: Request, chat_request: ChatRequest):
+    """Ask the agriculture AI assistant a question"""
+    try:
+        from datetime import datetime
+        
+        if not request.message or request.message.strip() == "":
+            raise HTTPException(status_code=400, detail="Message cannot be empty")
+        
+        # Get response from chatbot
+        if chat_request.history and len(chat_request.history) > 0:
+            # Use history for context
+            history_list = [{"role": msg.role, "content": msg.content} for msg in chat_request.history]
+            response = chatbot_service.get_response_with_history(chat_request.message, history_list)
+        else:
+            # Simple response without history
+            response = chatbot_service.get_response(chat_request.message)
+        
+        return {
+            "response": response,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/suggestions")
+@limiter.limit("100/hour")
+async def get_suggestions(request: Request):
+    """Get suggested questions for farmers"""
+    return {
+        "suggestions": [
+            "When is the best time to plant wheat?",
+            "How do I treat tomato leaf blight?",
+            "What fertilizer is best for rice?",
+            "How often should I irrigate my crops?",
+            "How to control aphids organically?",
+            "What are the symptoms of nitrogen deficiency?",
+            "Best crops for monsoon season?",
+            "How to improve soil fertility naturally?"
+        ]
+    }

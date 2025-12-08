@@ -1,0 +1,117 @@
+import os
+import requests
+from dotenv import load_dotenv
+from datetime import datetime
+from app.core.cache import cache_manager
+from app.core.logging_config import logger
+
+load_dotenv()
+
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
+BASE_URL = "https://api.openweathermap.org/data/2.5"
+
+# Cache TTL constants
+WEATHER_CACHE_TTL = 3600  # 1 hour for current weather
+FORECAST_CACHE_TTL = 7200  # 2 hours for forecasts
+
+class WeatherService:
+    
+    @staticmethod
+    def get_current_weather(city: str, country_code: str = "IN"):
+        """Get current weather for a city with caching"""
+        cache_key = f"{city}:{country_code}"
+        
+        # Try to get from cache first
+        cached = cache_manager.get("weather:current", cache_key)
+        if cached:
+            logger.info(f"Weather cache hit for {city}", endpoint="weather")
+            return cached
+        
+        try:
+            url = f"{BASE_URL}/weather"
+            params = {
+                "q": f"{city},{country_code}",
+                "appid": OPENWEATHER_API_KEY,
+                "units": "metric"  # Celsius
+            }
+            
+            logger.info(f"Fetching weather from API for {city}", endpoint="weather")
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            result = {
+                "city": data["name"],
+                "temperature": data["main"]["temp"],
+                "feels_like": data["main"]["feels_like"],
+                "humidity": data["main"]["humidity"],
+                "description": data["weather"][0]["description"],
+                "wind_speed": data["wind"]["speed"],
+                "timestamp": datetime.now().isoformat(),
+                "cached": False
+            }
+            
+            # Cache the result
+            cache_manager.set("weather:current", cache_key, result, WEATHER_CACHE_TTL)
+            
+            return result
+            
+        except requests.Timeout:
+            logger.error(f"Weather API timeout for {city}", endpoint="weather")
+            return {"error": "Weather service timeout - try again"}
+        except requests.RequestException as e:
+            logger.error(f"Weather API error for {city}: {str(e)}", exc_info=e, endpoint="weather")
+            return {"error": f"Weather service error: {str(e)}"}
+    
+    @staticmethod
+    def get_forecast(city: str, country_code: str = "IN", days: int = 5):
+        """Get weather forecast for a city with caching"""
+        cache_key = f"{city}:{country_code}:{days}"
+        
+        # Try to get from cache first
+        cached = cache_manager.get("weather:forecast", cache_key)
+        if cached:
+            logger.info(f"Forecast cache hit for {city}", endpoint="weather")
+            return cached
+        
+        try:
+            url = f"{BASE_URL}/forecast"
+            params = {
+                "q": f"{city},{country_code}",
+                "appid": OPENWEATHER_API_KEY,
+                "units": "metric"
+            }
+            
+            logger.info(f"Fetching forecast from API for {city}", endpoint="weather")
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            forecast_list = []
+            for item in data["list"][:days * 8]:  # 8 forecasts per day
+                forecast_list.append({
+                    "datetime": item["dt_txt"],
+                    "temperature": item["main"]["temp"],
+                    "description": item["weather"][0]["description"],
+                    "rain_probability": item.get("pop", 0) * 100,
+                    "humidity": item["main"]["humidity"]
+                })
+            
+            result = {
+                "city": data["city"]["name"],
+                "forecasts": forecast_list,
+                "cached": False
+            }
+            
+            # Cache the result
+            cache_manager.set("weather:forecast", cache_key, result, FORECAST_CACHE_TTL)
+            
+            return result
+            
+        except requests.Timeout:
+            logger.error(f"Forecast API timeout for {city}", endpoint="weather")
+            return {"error": "Forecast service timeout - try again"}
+        except requests.RequestException as e:
+            logger.error(f"Forecast API error for {city}: {str(e)}", exc_info=e, endpoint="weather")
+            return {"error": f"Forecast service error: {str(e)}"}
+        
