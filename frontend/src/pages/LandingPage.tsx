@@ -10,9 +10,18 @@ import {
   Shield,
   Zap,
   ChevronDown,
+  ChevronUp,
   FileText,
   BookOpen,
   Mail,
+  HelpCircle,
+  Star,
+  Play,
+  Users,
+  Send,
+  Twitter,
+  Linkedin,
+  Github,
 } from "lucide-react";
 
 export const LandingPage: React.FC = () => {
@@ -24,6 +33,14 @@ export const LandingPage: React.FC = () => {
 
   // Track active section for link highlighting
   const [activeSection, setActiveSection] = useState("");
+
+  // Track billing period (monthly/annual)
+  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annual">(
+    "monthly"
+  );
+
+  // Track open FAQ items
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
   // Track dropdown states
   const [productsOpen, setProductsOpen] = useState(false);
@@ -445,58 +462,70 @@ export const LandingPage: React.FC = () => {
             {[
               {
                 icon: Brain,
-                title: "AI-Powered Advisor",
+                title: "Smart Crop Advisor",
                 description:
                   "Get personalized recommendations for your crops, diseases, and farming decisions in real-time",
-                color: "from-purple-500 to-pink-500",
+                iconColor: "text-purple-600",
+                bgColor: "bg-purple-50/50",
               },
               {
                 icon: Cloud,
-                title: "Weather Intelligence",
+                title: "Precision Weather",
                 description:
                   "Accurate forecasts, irrigation planning, and extreme weather alerts tailored to your fields",
-                color: "from-blue-500 to-cyan-500",
+                iconColor: "text-blue-500",
+                bgColor: "bg-blue-50/50",
               },
               {
                 icon: TrendingUp,
-                title: "Market Insights",
+                title: "Market Price Alerts",
                 description:
                   "Real-time price tracking, trends analysis, and alerts to help you sell at the best time",
-                color: "from-green-500 to-emerald-500",
+                iconColor: "text-[#1B5E20]",
+                bgColor: "bg-green-50/50",
               },
               {
                 icon: Zap,
                 title: "Yield Prediction",
                 description:
                   "ML-based forecasts to help you plan better and maximize your harvest potential",
-                color: "from-yellow-500 to-orange-500",
+                iconColor: "text-orange-500",
+                bgColor: "bg-orange-50/50",
               },
               {
                 icon: Shield,
                 title: "Disease Detection",
                 description:
                   "Upload photos of your crops and get instant AI diagnosis with treatment recommendations",
-                color: "from-red-500 to-pink-500",
+                iconColor: "text-red-500",
+                bgColor: "bg-red-50/50",
               },
               {
                 icon: CheckCircle,
                 title: "24/7 Monitoring",
                 description:
                   "Autonomous AI agent continuously monitors your fields and sends proactive alerts",
-                color: "from-indigo-500 to-purple-500",
+                iconColor: "text-teal-600",
+                bgColor: "bg-teal-50/50",
               },
             ].map((feature, idx) => (
               <div
                 key={idx}
-                className="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
+                className="group bg-white rounded-lg p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] border border-gray-100 hover:border-[#1B5E20] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-300 min-h-[280px] flex flex-col"
               >
-                <div className="w-14 h-14 bg-[#1B5E20] rounded-xl flex items-center justify-center mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-                  <feature.icon className="text-white" size={28} />
+                <div
+                  className={`w-14 h-14 ${feature.bgColor} rounded-lg flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110`}
+                >
+                  <feature.icon
+                    className={feature.iconColor}
+                    size={28}
+                    strokeWidth={1.5}
+                  />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
+                <h3 className="text-xl font-semibold text-gray-900 mb-3 leading-tight">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 leading-relaxed font-normal text-[15px]">
                   {feature.description}
                 </p>
               </div>
@@ -506,87 +535,224 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4 bg-[#F4F6F5]">
+      <section id="pricing" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-xl text-gray-600">
+            <p className="text-xl text-gray-600 mb-8">
               Choose the plan that's right for you
             </p>
+
+            {/* Billing Toggle */}
+            <div className="flex items-center justify-center gap-4 mb-6">
+              <span
+                className={`text-base font-medium transition-colors ${
+                  billingPeriod === "monthly"
+                    ? "text-gray-900"
+                    : "text-gray-500"
+                }`}
+              >
+                Monthly
+              </span>
+              <button
+                onClick={() =>
+                  setBillingPeriod(
+                    billingPeriod === "monthly" ? "annual" : "monthly"
+                  )
+                }
+                className="relative w-14 h-7 bg-gray-200 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] focus:ring-offset-2"
+                style={{
+                  backgroundColor: billingPeriod === "annual" ? "#1B5E20" : "",
+                }}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200"
+                  style={{
+                    transform:
+                      billingPeriod === "annual"
+                        ? "translateX(28px)"
+                        : "translateX(0)",
+                  }}
+                />
+              </button>
+              <span
+                className={`text-base font-medium transition-colors ${
+                  billingPeriod === "annual" ? "text-gray-900" : "text-gray-500"
+                }`}
+              >
+                Annual
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-[#E8F5E9] text-[#1B5E20] text-sm font-semibold px-3 py-1 rounded-full border border-[#1B5E20]/20">
+                <span>💰</span> Save 20% with annual billing
+              </span>
+            </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
-                <div className="text-4xl font-bold text-gray-900 mb-2">$0</div>
-                <p className="text-gray-600">Forever free</p>
+            <div className="bg-white rounded-2xl p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300">
+              {/* Icon Box */}
+              <div className="w-14 h-14 bg-[#F6F7F8] rounded-2xl flex items-center justify-center mb-6">
+                <span className="text-2xl">🌱</span>
               </div>
-              <ul className="space-y-4 mb-8">
+
+              {/* Title & Subtitle */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
+              <p className="text-base text-gray-600 mb-6">
+                For individual farmers
+              </p>
+
+              {/* Price */}
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1 mb-8">
+                  <span className="text-5xl font-bold text-gray-900">$0</span>
+                  <span className="text-gray-600 text-lg">
+                    /{billingPeriod === "monthly" ? "month" : "year"}
+                  </span>
+                </div>
+
+                {/* CTA Button */}
+                <Link
+                  to="/register"
+                  className="block w-full text-center bg-white border-2 border-gray-300 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
+                >
+                  Get Started
+                </Link>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-3 pt-6 border-t border-gray-100">
                 {[
                   "1 Field",
                   "Basic weather forecasts",
                   "Price tracking",
                   "Community support",
                 ].map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <CheckCircle size={20} className="text-green-600" />
-                    <span className="text-gray-700">{item}</span>
-                  </li>
+                  <div key={idx} className="flex items-start gap-3">
+                    <CheckCircle
+                      size={18}
+                      className="text-gray-400 mt-0.5 flex-shrink-0"
+                      strokeWidth={2}
+                    />
+                    <span className="text-gray-700 text-[15px]">{item}</span>
+                  </div>
                 ))}
-              </ul>
-              <Link
-                to="/register"
-                className="block w-full text-center bg-gray-100 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
-              >
-                Get Started
-              </Link>
+              </div>
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-[#1B5E20] rounded-2xl p-8 shadow-[0_4px_16px_rgba(0,0,0,0.12)] transform scale-105 border-2 border-[#66BB6A]">
-              <div className="text-center mb-6">
-                <div className="inline-block bg-white/20 text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
+            <div className="bg-white rounded-2xl p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border-2 border-[#1B5E20] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300 relative">
+              {/* Most Popular Badge */}
+              <div className="absolute top-6 right-6">
+                <span className="bg-[#E8F5E9] text-[#1B5E20] text-xs font-semibold px-3 py-1.5 rounded-full border border-[#1B5E20]/20">
                   Most Popular
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Pro</h3>
-                <div className="text-4xl font-bold text-white mb-2">$29</div>
-                <p className="text-green-100">per month</p>
+                </span>
               </div>
-              <ul className="space-y-4 mb-8">
+
+              {/* Icon Box */}
+              <div className="w-14 h-14 bg-[#1B5E20] rounded-2xl flex items-center justify-center mb-6">
+                <span className="text-2xl">🚀</span>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
+              <p className="text-base text-gray-600 mb-6">
+                For professional farmers
+              </p>
+
+              {/* Price */}
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-5xl font-bold text-gray-900">
+                    ${billingPeriod === "monthly" ? "29" : "279"}
+                  </span>
+                  <span className="text-gray-600 text-lg">
+                    /{billingPeriod === "monthly" ? "month" : "year"}
+                  </span>
+                </div>
+                {billingPeriod === "annual" && (
+                  <p className="text-sm text-gray-500 mb-6">
+                    $23.25/month billed annually
+                  </p>
+                )}
+                {billingPeriod === "monthly" && <div className="mb-6" />}
+
+                {/* CTA Button */}
+                <Link
+                  to="/register"
+                  className="block w-full text-center bg-[#1B5E20] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#0d3010] transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  Start Free Trial
+                </Link>
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  14-day free trial • No credit card required
+                </p>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-3 pt-6 border-t border-gray-100">
                 {[
                   "Unlimited fields",
-                  "AI advisor",
-                  "Disease detection",
-                  "Market alerts",
-                  "Yield predictions",
+                  "AI-powered crop advisor",
+                  "Real-time disease detection",
+                  "Market price alerts",
+                  "AI yield predictions",
                   "Priority support",
                 ].map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <CheckCircle size={20} className="text-white" />
-                    <span className="text-white">{item}</span>
-                  </li>
+                  <div key={idx} className="flex items-start gap-3">
+                    <CheckCircle
+                      size={18}
+                      className="text-[#1B5E20] mt-0.5 flex-shrink-0"
+                      strokeWidth={2}
+                    />
+                    <span className="text-gray-700 text-[15px]">{item}</span>
+                  </div>
                 ))}
-              </ul>
-              <Link
-                to="/register"
-                className="block w-full text-center bg-white text-green-600 px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition"
-              >
-                Start Free Trial
-              </Link>
+              </div>
             </div>
 
             {/* Team Plan */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-              <div className="text-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Team</h3>
-                <div className="text-4xl font-bold text-gray-900 mb-2">$99</div>
-                <p className="text-gray-600">per month</p>
+            <div className="bg-white rounded-2xl p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300">
+              {/* Icon Box */}
+              <div className="w-14 h-14 bg-[#F6F7F8] rounded-2xl flex items-center justify-center mb-6">
+                <span className="text-2xl">👥</span>
               </div>
-              <ul className="space-y-4 mb-8">
+
+              {/* Title & Subtitle */}
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Team</h3>
+              <p className="text-base text-gray-600 mb-6">
+                For agribusiness teams
+              </p>
+
+              {/* Price */}
+              <div className="mb-8">
+                <div className="flex items-baseline gap-1 mb-8">
+                  <span className="text-5xl font-bold text-gray-900">
+                    ${billingPeriod === "monthly" ? "99" : "950"}
+                  </span>
+                  <span className="text-gray-600 text-lg">
+                    /{billingPeriod === "monthly" ? "month" : "year"}
+                  </span>
+                </div>
+                {billingPeriod === "annual" && (
+                  <p className="text-sm text-gray-500 mb-8">
+                    $79.17/month billed annually
+                  </p>
+                )}
+
+                {/* CTA Button */}
+                <Link
+                  to="/contact"
+                  className="block w-full text-center bg-white border-2 border-[#1B5E20] text-[#1B5E20] px-6 py-3 rounded-xl font-semibold hover:bg-[#E8F5E9] transition-all duration-200"
+                >
+                  Contact Sales
+                </Link>
+              </div>
+
+              {/* Features */}
+              <div className="space-y-3 pt-6 border-t border-gray-100">
                 {[
                   "Everything in Pro",
                   "10 team members",
@@ -595,105 +761,259 @@ export const LandingPage: React.FC = () => {
                   "Custom integrations",
                   "24/7 support",
                 ].map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-3">
-                    <CheckCircle size={20} className="text-green-600" />
-                    <span className="text-gray-700">{item}</span>
-                  </li>
+                  <div key={idx} className="flex items-start gap-3">
+                    <CheckCircle
+                      size={18}
+                      className="text-gray-400 mt-0.5 flex-shrink-0"
+                      strokeWidth={2}
+                    />
+                    <span className="text-gray-700 text-[15px]">{item}</span>
+                  </div>
                 ))}
-              </ul>
-              <Link
-                to="/contact"
-                className="block w-full text-center bg-gray-100 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
-              >
-                Contact Sales
-              </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-4 bg-white">
+      <section className="py-20 px-4 bg-[#F9FAFB]">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-12">
-            Frequently Asked Questions
-          </h2>
-          <div className="space-y-6">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-[#E8F5E9] rounded-2xl mb-4">
+              <HelpCircle
+                size={28}
+                className="text-[#1B5E20]"
+                strokeWidth={2}
+              />
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-gray-600">
+              Everything you need to know about AgriAI
+            </p>
+          </div>
+
+          <div className="space-y-3">
             {[
               {
                 q: "How accurate are the AI predictions?",
-                a: "Our AI models are trained on millions of data points and achieve 90%+ accuracy. We continuously improve them with real farmer feedback.",
+                a: "Our AI models are trained on millions of data points and achieve 90%+ accuracy. We continuously improve them with real farmer feedback and the latest agricultural research.",
               },
               {
                 q: "Can I use it on my mobile phone?",
-                a: "Yes! Our platform is fully responsive and works great on all devices. We also have native mobile apps coming soon.",
+                a: "Yes! Our platform is fully responsive and works great on all devices. We also have native mobile apps coming soon for iOS and Android.",
               },
               {
                 q: "What if I need help?",
-                a: "We offer email support for all users, and priority support for Pro and Team plans. Our community forum is also very active.",
+                a: "We offer email support for all users, and priority support for Pro and Team plans. Our community forum is also very active with over 10,000 farmers sharing tips and best practices.",
               },
               {
                 q: "Is my data secure?",
-                a: "Absolutely. We use industry-standard encryption and never share your data with third parties. Your farm data belongs to you.",
+                a: "Absolutely. We use industry-standard encryption (AES-256) and never share your data with third parties. Your farm data belongs to you and is stored securely in compliance with international data protection standards.",
               },
               {
                 q: "Can I cancel anytime?",
-                a: "Yes, you can cancel your subscription at any time. No long-term commitments required.",
+                a: "Yes, you can cancel your subscription at any time with no cancellation fees. No long-term commitments required. If you cancel, you'll continue to have access until the end of your billing period.",
+              },
+              {
+                q: "Do you offer a free trial?",
+                a: "Yes! Pro plan comes with a 14-day free trial with no credit card required. You'll get full access to all features so you can see the value firsthand before committing.",
               },
             ].map((faq, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-xl p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">
-                  {faq.q}
-                </h3>
-                <p className="text-gray-600">{faq.a}</p>
+              <div
+                key={idx}
+                className="bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 hover:border-gray-300"
+              >
+                <button
+                  onClick={() =>
+                    setOpenFaqIndex(openFaqIndex === idx ? null : idx)
+                  }
+                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors duration-150"
+                >
+                  <h3 className="text-lg font-semibold text-gray-900 pr-8">
+                    {faq.q}
+                  </h3>
+                  <div className="flex-shrink-0">
+                    {openFaqIndex === idx ? (
+                      <ChevronUp
+                        size={20}
+                        className="text-[#1B5E20]"
+                        strokeWidth={2.5}
+                      />
+                    ) : (
+                      <ChevronDown
+                        size={20}
+                        className="text-gray-400"
+                        strokeWidth={2.5}
+                      />
+                    )}
+                  </div>
+                </button>
+                <div
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                    openFaqIndex === idx
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-6 pb-6 pt-0">
+                    <p className="text-gray-600 leading-relaxed">{faq.a}</p>
+                  </div>
+                </div>
               </div>
             ))}
+          </div>
+
+          {/* Still have questions CTA */}
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">Still have questions?</p>
+            <Link
+              to="/contact"
+              className="inline-flex items-center gap-2 text-[#1B5E20] font-semibold hover:underline transition-all"
+            >
+              Contact our support team
+              <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-[#1B5E20]">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Ready to Transform Your Farm?
-          </h2>
-          <p className="text-xl text-green-100 mb-10">
-            Join thousands of farmers already using AgriAI to grow smarter
-          </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 bg-white text-green-600 px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-200"
-          >
-            Start Your Free Trial
-            <ArrowRight size={20} />
-          </Link>
+      <section className="relative py-16 px-4 bg-gradient-to-br from-[#1B5E20] via-[#2E7D32] to-[#1B5E20] overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 2px 2px, white 1px, transparent 0)",
+              backgroundSize: "40px 40px",
+            }}
+          />
+        </div>
+
+        <div className="max-w-4xl mx-auto relative">
+          {/* Main Content */}
+          <div className="text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Ready to Transform Your Farm?
+            </h2>
+            <p className="text-lg text-green-50 mb-8 max-w-2xl mx-auto">
+              Join thousands of farmers already using AgriAI to increase yields
+              and reduce costs
+            </p>
+
+            {/* Testimonial Quote - Enhanced */}
+            <div className="max-w-2xl mx-auto mb-8">
+              <div className="bg-white/[0.08] backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.16)] transition-all duration-300">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <span className="text-2xl">👨‍🌾</span>
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white italic mb-3 leading-relaxed text-[15px]">
+                      "AgriAI helped us increase our yield by 35% in the first
+                      season. The AI predictions are incredibly accurate and
+                      saved us thousands in input costs."
+                    </p>
+                    <div>
+                      <p className="text-white font-semibold text-sm">
+                        Rajesh Kumar
+                      </p>
+                      <p className="text-green-50/80 text-xs">
+                        Organic Farm, Maharashtra • 150 acres
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Button - Enhanced */}
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 bg-white text-[#1B5E20] px-8 py-3.5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-200"
+            >
+              Start Your Free Trial
+              <ArrowRight size={20} />
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-gray-300 py-12 px-4">
+      <footer className="bg-gray-900 text-gray-300 py-16 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
+          <div className="grid md:grid-cols-12 gap-8 mb-12">
+            {/* Brand Section */}
+            <div className="md:col-span-4">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-[#1B5E20] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold">🌾</span>
                 </div>
                 <span className="text-xl font-bold text-white">AgriAI</span>
               </div>
-              <p className="text-sm text-gray-400">
-                Smart farming solutions powered by AI
+              <p className="text-sm text-gray-400 mb-6 max-w-xs">
+                Smart farming solutions powered by AI. Helping farmers make
+                data-driven decisions for better yields.
               </p>
+
+              {/* Newsletter Signup */}
+              <div className="mb-6">
+                <h4 className="text-sm font-semibold text-white mb-3">
+                  Stay Updated
+                </h4>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] focus:border-transparent"
+                  />
+                  <button className="bg-[#1B5E20] text-white p-2 rounded-lg hover:bg-[#0d3010] transition-colors">
+                    <Send size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div className="flex gap-3">
+                <a
+                  href="https://twitter.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#1B5E20] transition-colors"
+                >
+                  <Twitter size={18} />
+                </a>
+                <a
+                  href="https://linkedin.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#1B5E20] transition-colors"
+                >
+                  <Linkedin size={18} />
+                </a>
+                <a
+                  href="https://github.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-9 h-9 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-[#1B5E20] transition-colors"
+                >
+                  <Github size={18} />
+                </a>
+              </div>
             </div>
 
-            <div>
-              <h4 className="font-bold text-white mb-4">Product</h4>
-              <ul className="space-y-2 text-sm">
+            {/* Product Links */}
+            <div className="md:col-span-2">
+              <h4 className="font-semibold text-white mb-4 text-sm">Product</h4>
+              <ul className="space-y-3 text-sm">
                 <li>
                   <a
                     href="#features"
-                    className="hover:text-green-400 transition"
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
                     Features
                   </a>
@@ -701,20 +1021,23 @@ export const LandingPage: React.FC = () => {
                 <li>
                   <a
                     href="#pricing"
-                    className="hover:text-green-400 transition"
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
                     Pricing
                   </a>
                 </li>
                 <li>
-                  <Link to="/docs" className="hover:text-green-400 transition">
-                    Docs
+                  <Link
+                    to="/docs"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Documentation
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/status"
-                    className="hover:text-green-400 transition"
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
                     Status
                   </Link>
@@ -722,44 +1045,118 @@ export const LandingPage: React.FC = () => {
               </ul>
             </div>
 
-            <div>
-              <h4 className="font-bold text-white mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
+            {/* Resources Links */}
+            <div className="md:col-span-2">
+              <h4 className="font-semibold text-white mb-4 text-sm">
+                Resources
+              </h4>
+              <ul className="space-y-3 text-sm">
                 <li>
-                  <Link to="/blog" className="hover:text-green-400 transition">
+                  <Link
+                    to="/blog"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     Blog
                   </Link>
                 </li>
                 <li>
                   <Link
-                    to="/contact"
-                    className="hover:text-green-400 transition"
+                    to="/docs"
+                    className="text-gray-400 hover:text-white transition-colors"
                   >
-                    Contact
+                    Help Center
                   </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Support
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Community
+                  </a>
                 </li>
               </ul>
             </div>
 
-            <div>
-              <h4 className="font-bold text-white mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm">
+            {/* Company Links */}
+            <div className="md:col-span-2">
+              <h4 className="font-semibold text-white mb-4 text-sm">Company</h4>
+              <ul className="space-y-3 text-sm">
                 <li>
-                  <a href="#" className="hover:text-green-400 transition">
-                    Privacy
+                  <Link
+                    to="/contact"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contact"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Contact
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Careers
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal Links */}
+            <div className="md:col-span-2">
+              <h4 className="font-semibold text-white mb-4 text-sm">Legal</h4>
+              <ul className="space-y-3 text-sm">
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Privacy Policy
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-green-400 transition">
-                    Terms
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
+                    Cookie Policy
                   </a>
                 </li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-            <p>© 2025 AgriAI Platform. All rights reserved.</p>
+          {/* Bottom Bar */}
+          <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-gray-400">
+              © {new Date().getFullYear()} AgriAI Platform. All rights reserved.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <span>Made with ❤️ for farmers</span>
+            </div>
           </div>
         </div>
       </footer>
