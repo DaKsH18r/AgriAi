@@ -110,7 +110,7 @@ export const LandingPage: React.FC = () => {
           >
             {/* Logo Section - Clean Enterprise */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-[#1B5E20] rounded-lg flex items-center justify-center transition-all group-hover:shadow-lg">
+              <div className="w-10 h-10 flex items-center justify-center transition-all">
                 <span className="text-2xl">🌾</span>
               </div>
               <div className="flex flex-col">
@@ -294,16 +294,13 @@ export const LandingPage: React.FC = () => {
               </Link>
               <Link
                 to="/register"
-                className="relative group px-6 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-semibold rounded-full overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
+                className="px-6 py-2.5 bg-[#1B5E20] hover:bg-[#124218] text-white text-sm font-semibold rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2 flex items-center gap-2"
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  Get Started
-                  <ArrowRight
-                    size={16}
-                    className="group-hover:translate-x-0.5 transition-transform"
-                  />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                Get Started
+                <ArrowRight
+                  size={16}
+                  className="group-hover:translate-x-0.5 transition-transform"
+                />
               </Link>
             </div>
           </div>
@@ -313,7 +310,7 @@ export const LandingPage: React.FC = () => {
       {/* Hero Section */}
       <section
         id="main-content"
-        className="relative min-h-[100vh] flex items-center overflow-hidden bg-[#f5fdf8] pt-[calc(80px+6rem)] pb-40"
+        className="relative min-h-[100vh] flex items-center overflow-hidden bg-[#f5fdf8] pt-[calc(80px+4rem)] pb-40"
         role="main"
         aria-label="Hero section"
       >
@@ -352,14 +349,8 @@ export const LandingPage: React.FC = () => {
             />
           </picture>
 
-          {/* Gradient Overlay */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(232, 245, 233, 0.7) 0%, rgba(232, 245, 233, 0.5) 40%, rgba(200, 230, 201, 0.3) 70%, rgba(232, 245, 233, 0.4) 100%)",
-            }}
-          ></div>
+          {/* Light Overlay */}
+          <div className="absolute inset-0 bg-[#F4F6F5]/80"></div>
 
           {/* Pattern Overlay */}
           <div
@@ -378,27 +369,25 @@ export const LandingPage: React.FC = () => {
             <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-gray-200 px-4 py-2 rounded-full shadow-sm mb-8">
               <span className="text-lg">🌱</span>
               <span className="text-sm font-semibold text-gray-700">
-                Trusted by Fortune 500 Agribusinesses
+                Trusted by 10,000+ farmers worldwide
               </span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6">
               The AI Platform
-              <span className="block mt-2 bg-gradient-to-r from-green-600 via-emerald-600 to-blue-600 bg-clip-text text-transparent">
-                for Agriculture
-              </span>
+              <span className="block mt-2 text-[#1B5E20]">for Agriculture</span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-800 mb-4 max-w-3xl mx-auto font-medium">
-              Deploy intelligent agricultural features in weeks, not years.
+              Turn farm data into actionable intelligence.
             </p>
             <p className="text-lg text-gray-700 mb-10 max-w-2xl mx-auto">
-              From multilingual advisory to visual crop analysis - all powered
-              by our domain-specific AI.
+              Predict yields, optimize inputs, and automate scouting with
+              production-grade AI agents built for modern farming.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Link
                 to="/register"
-                className="group bg-gradient-to-r from-green-600 to-emerald-600 text-white px-8 py-3.5 rounded-lg font-semibold text-base shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2"
+                className="group bg-[#1B5E20] hover:bg-[#124218] text-white px-8 py-3.5 rounded-lg font-semibold text-base shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2"
               >
                 Schedule Demo
                 <ArrowRight
@@ -408,16 +397,32 @@ export const LandingPage: React.FC = () => {
               </Link>
               <Link
                 to="/features"
-                className="bg-white text-gray-900 px-8 py-3.5 rounded-lg font-semibold text-base shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 border border-gray-300 hover:border-gray-400 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-600 focus-visible:ring-offset-2"
+                className="bg-transparent text-gray-900 px-8 py-3.5 rounded-lg font-semibold text-base hover:bg-white/50 transform hover:-translate-y-0.5 transition-all duration-300 border-2 border-gray-300 hover:border-[#1B5E20] min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2"
               >
                 Explore Platform
               </Link>
-              <Link
-                to="/dashboard/agent"
-                className="bg-green-800 hover:bg-green-900 text-white px-8 py-3.5 rounded-lg font-semibold text-base shadow-md hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2"
-              >
-                🌾 Farmers' AI Agent
-              </Link>
+            </div>
+
+            {/* Stats Bar */}
+            <div className="flex flex-wrap justify-center items-center gap-8 text-center">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={20} className="text-[#1B5E20]" />
+                <span className="text-sm font-semibold text-gray-700">
+                  95% Prediction Accuracy
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle size={20} className="text-[#1B5E20]" />
+                <span className="text-sm font-semibold text-gray-700">
+                  30% Yield Increase
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle size={20} className="text-[#1B5E20]" />
+                <span className="text-sm font-semibold text-gray-700">
+                  24/7 AI Monitoring
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -485,9 +490,7 @@ export const LandingPage: React.FC = () => {
                 key={idx}
                 className="card-hover bg-white rounded-2xl p-8 shadow-lg border border-gray-100"
               >
-                <div
-                  className={`w-14 h-14 bg-gradient-to-br ${feature.color} rounded-xl flex items-center justify-center mb-6 shadow-lg`}
-                >
+                <div className="w-14 h-14 bg-[#1B5E20] rounded-xl flex items-center justify-center mb-6 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
                   <feature.icon className="text-white" size={28} />
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
@@ -503,10 +506,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* Pricing Section */}
-      <section
-        id="pricing"
-        className="py-20 px-4 bg-gradient-to-br from-gray-50 to-green-50/30"
-      >
+      <section id="pricing" className="py-20 px-4 bg-[#F4F6F5]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -547,7 +547,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-8 shadow-2xl transform scale-105 border-4 border-green-400">
+            <div className="bg-[#1B5E20] rounded-2xl p-8 shadow-[0_4px_16px_rgba(0,0,0,0.12)] transform scale-105 border-2 border-[#66BB6A]">
               <div className="text-center mb-6">
                 <div className="inline-block bg-white/20 text-white px-4 py-1 rounded-full text-sm font-semibold mb-4">
                   Most Popular
@@ -653,7 +653,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-green-500 to-emerald-600">
+      <section className="py-20 px-4 bg-[#1B5E20]">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
             Ready to Transform Your Farm?
@@ -677,7 +677,7 @@ export const LandingPage: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-[#1B5E20] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold">🌾</span>
                 </div>
                 <span className="text-xl font-bold text-white">AgriAI</span>
