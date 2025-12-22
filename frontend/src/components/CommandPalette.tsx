@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   Search,
   Home,
@@ -30,6 +31,7 @@ export const CommandPalette: React.FC = () => {
   const [search, setSearch] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const commands: Command[] = [
@@ -38,47 +40,71 @@ export const CommandPalette: React.FC = () => {
       id: "nav-home",
       label: "Go to Dashboard",
       icon: Home,
-      action: () => navigate("/app"),
+      action: () => navigate("/dashboard"),
       keywords: ["dashboard", "home", "main"],
-      category: "navigation",
-    },
-    {
-      id: "nav-fields",
-      label: "Go to Fields",
-      icon: Sprout,
-      action: () => navigate("/app/fields"),
-      keywords: ["fields", "farms", "crops"],
       category: "navigation",
     },
     {
       id: "nav-alerts",
       label: "Go to Alerts",
       icon: Bell,
-      action: () => navigate("/app/alerts"),
+      action: () => navigate("/dashboard/alerts"),
       keywords: ["alerts", "notifications", "messages"],
-      category: "navigation",
-    },
-    {
-      id: "nav-settings",
-      label: "Go to Settings",
-      icon: Settings,
-      action: () => navigate("/app/settings"),
-      keywords: ["settings", "preferences", "config"],
       category: "navigation",
     },
     {
       id: "nav-profile",
       label: "Go to Profile",
       icon: User,
-      action: () => navigate("/profile"),
+      action: () => navigate("/dashboard/profile"),
       keywords: ["profile", "account", "user"],
+      category: "navigation",
+    },
+    {
+      id: "nav-agent",
+      label: "Go to AI Agronomist",
+      icon: Sprout,
+      action: () => navigate("/dashboard/agent"),
+      keywords: ["agent", "ai", "agronomist", "analysis"],
+      category: "navigation",
+    },
+    {
+      id: "nav-weather",
+      label: "Go to Weather",
+      icon: Settings,
+      action: () => navigate("/dashboard/weather"),
+      keywords: ["weather", "forecast", "climate"],
+      category: "navigation",
+    },
+    {
+      id: "nav-prices",
+      label: "Go to Market Prices",
+      icon: Settings,
+      action: () => navigate("/dashboard/prices"),
+      keywords: ["prices", "market", "mandi"],
+      category: "navigation",
+    },
+    {
+      id: "nav-yield",
+      label: "Go to Yield Prediction",
+      icon: Sprout,
+      action: () => navigate("/dashboard/yield"),
+      keywords: ["yield", "prediction", "harvest"],
+      category: "navigation",
+    },
+    {
+      id: "nav-chatbot",
+      label: "Go to Chatbot",
+      icon: MessageSquare,
+      action: () => navigate("/dashboard/chatbot"),
+      keywords: ["chatbot", "chat", "assistant"],
       category: "navigation",
     },
     {
       id: "nav-admin",
       label: "Go to Admin Panel",
       icon: Shield,
-      action: () => navigate("/app/admin"),
+      action: () => navigate("/dashboard/admin"),
       keywords: ["admin", "management", "control"],
       category: "navigation",
     },
@@ -121,13 +147,18 @@ export const CommandPalette: React.FC = () => {
     },
   ];
 
-  const filteredCommands = commands.filter(
-    (cmd) =>
+  const filteredCommands = commands.filter((cmd) => {
+    // Hide admin panel from non-admin users
+    if (cmd.id === "nav-admin" && !user?.is_superuser) {
+      return false;
+    }
+    return (
       cmd.label.toLowerCase().includes(search.toLowerCase()) ||
       cmd.keywords.some((keyword) =>
         keyword.toLowerCase().includes(search.toLowerCase())
       )
-  );
+    );
+  });
 
   const groupedCommands = {
     navigation: filteredCommands.filter((cmd) => cmd.category === "navigation"),

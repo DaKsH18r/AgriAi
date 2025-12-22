@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, Request
 from app.services.price_service import PriceService
+from app.services.data_integration_service import data_service
 from typing import List
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -9,8 +10,7 @@ router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
 @router.get("/predict")
-@limiter.limit("50/hour")  # Lower limit for prediction
-@limiter.limit("50/hour")  # Lower limit for prediction
+@limiter.limit("200/hour")  # Increased limit for price predictions
 async def predict_crop_prices(
     request: Request,
     crop: str = Query(..., description="Crop name (wheat, rice, tomato, onion, potato, cotton, sugarcane)"),
@@ -43,11 +43,24 @@ async def get_historical_prices(
 ):
     """Get historical price data for a crop"""
     try:
-        historical_df = PriceService.generate_historical_prices(crop, days)
+        # Get historical data from database (real + synthetic)
+        historical_df = data_service.get_price_data(crop, days=days)
+        
+        if historical_df.empty:
+            raise HTTPException(status_code=404, detail=f"No price data found for {crop}")
+        
+        # Convert to list of dicts with proper date formatting
+        prices_list = []
+        for _, row in historical_df.iterrows():
+            prices_list.append({
+                'date': row['date'].isoformat() if hasattr(row['date'], 'isoformat') else str(row['date']),
+                'price': float(row['price']),
+                'commodity': row.get('commodity', crop)
+            })
         
         return {
             "crop": crop.lower(),
-            "data": historical_df.to_dict('records'),
+            "prices": prices_list,
             "summary": {
                 "average_price": round(historical_df['price'].mean(), 2),
                 "min_price": round(historical_df['price'].min(), 2),

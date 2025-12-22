@@ -71,7 +71,12 @@ export const RegisterPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:8000/api/auth/google/login";
+    const apiUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+    window.location.href = `${apiUrl.replace(
+      "/api",
+      ""
+    )}/api/auth/google/login`;
   };
 
   const handleBlur = (field: string) => {

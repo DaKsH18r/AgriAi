@@ -37,7 +37,7 @@ class SmartCropAgent:
         # Configure Gemini for insights only
         try:
             genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-            self.llm = genai.GenerativeModel('gemini-2.0-flash')  # Updated to latest stable model
+            self.llm = genai.GenerativeModel('gemini-flash-latest')  # Using free tier compatible model
         except Exception as e:
             logger.warning(f"Gemini initialization failed: {e}. LLM insights will be disabled.")
             self.llm = None
@@ -46,19 +46,27 @@ class SmartCropAgent:
         self, 
         crop: str, 
         city: str = "Delhi",
-        user_preferences: Optional[Dict] = None
+        user_preferences: Optional[Dict] = None,
+        days_ahead: int = 7
     ) -> Dict:
         """
         Main analysis method - production optimized
         
+        Args:
+            crop: Crop name
+            city: Location for weather
+            user_preferences: User risk tolerance, etc.
+            days_ahead: Prediction period (7, 30, 90, 180 days)
+        
         Returns decision in ~2 seconds (vs 15s with LangChain)
         """
         start_time = datetime.now()
-        logger.info(f"🤖 Agent analyzing {crop} in {city}")
+        logger.info(f"🤖 Agent analyzing {crop} in {city} for {days_ahead} days")
         
         try:
-            # Step 1: Gather data
-            price_data = data_service.get_price_data(crop, days=30)
+            # Step 1: Gather data (get more historical data for longer predictions)
+            historical_days = max(30, days_ahead * 2)  # 2x the prediction period
+            price_data = data_service.get_price_data(crop, days=historical_days)
             
             if price_data.empty:
                 logger.warning(f"No price data for {crop}")
@@ -66,8 +74,8 @@ class SmartCropAgent:
             
             current_price = price_data.iloc[-1]['price']
             
-            # Step 2: Get price predictions
-            prediction_result = PriceService.predict_prices(crop, days_ahead=7)
+            # Step 2: Get price predictions for requested period
+            prediction_result = PriceService.predict_prices(crop, days_ahead=days_ahead)
             
             # Convert prediction format to match what decision engine expects
             predictions = []
@@ -88,9 +96,6 @@ class SmartCropAgent:
                 weather_forecast = self.weather_service.get_forecast(city)
             except Exception as e:
                 logger.warning(f"Weather fetch failed: {e}")
-            
-            # Close the database session as we're done with data fetching
-            db.close()
             
             # Step 5: Run decision engine (FAST - no LLM calls)
             decision = decision_engine.analyze(
@@ -121,11 +126,14 @@ class SmartCropAgent:
             
             # Save analysis to database using context manager
             with get_db_session() as save_db:
+                # Use the LAST prediction (end of period) not the first
+                final_predicted_price = float(predictions[-1]['price']) if predictions else None
+                
                 analysis_record = AgentAnalysis(
                     crop=crop,
                     city=city,
                     current_price=float(current_price),  # Convert numpy float to Python float
-                    predicted_price=float(predictions[0]['price']) if predictions else None,
+                    predicted_price=final_predicted_price,  # Price at end of prediction period
                     action=decision.action,
                     confidence=float(decision.confidence),  # Convert numpy float to Python float
                     reason=decision.reasoning,
@@ -141,11 +149,14 @@ class SmartCropAgent:
                 logger.info(f"💾 Analysis saved to database (ID: {analysis_record.id})")
                     
             # Format response to match frontend expectations
+            final_predicted_price = predictions[-1]['price'] if predictions else None
+            
             return {
                 'crop': crop,
                 'city': city,
                 'current_price': current_price,
-                'predicted_price': predictions[0]['price'] if predictions else None,
+                'predicted_price': final_predicted_price,  # Price at end of prediction period
+                'days_ahead': days_ahead,  # Include prediction period in response
                 'decision': {
                     'action': decision.action,
                     'confidence': decision.confidence,

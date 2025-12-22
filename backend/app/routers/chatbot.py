@@ -23,13 +23,13 @@ class ChatResponse(BaseModel):
     timestamp: str
 
 @router.post("/ask", response_model=ChatResponse)
-@limiter.limit("100/hour")  # Allow real conversations with farmers
+@limiter.limit("10/minute")  # Reduced to stay under Gemini free tier limit
 async def ask_question(request: Request, chat_request: ChatRequest):
     """Ask the agriculture AI assistant a question"""
     try:
         from datetime import datetime
         
-        if not request.message or request.message.strip() == "":
+        if not chat_request.message or chat_request.message.strip() == "":
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
         # Get response from chatbot

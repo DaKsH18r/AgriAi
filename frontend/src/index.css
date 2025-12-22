@@ -38,6 +38,11 @@
 
   /* ===== FONT FAMILIES ===== */
   --font-family-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* ===== AGRI CUSTOM COLORS ===== */
+  --color-agri-dark: #1b5e20;
+  --color-agri-green: #4caf50;
+  --color-agri-surface: #f8fafc;
 }
 
 body {
@@ -47,6 +52,27 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-gray-50);
   color: var(--color-gray-900);
+}
+
+/* Agri utility classes */
+.bg-agri-dark {
+  background-color: var(--color-agri-dark);
+}
+
+.bg-agri-green {
+  background-color: var(--color-agri-green);
+}
+
+.bg-agri-surface {
+  background-color: var(--color-agri-surface);
+}
+
+.text-agri-dark {
+  color: var(--color-agri-dark);
+}
+
+.text-agri-green {
+  color: var(--color-agri-green);
 }
 
 /* Custom scrollbar */

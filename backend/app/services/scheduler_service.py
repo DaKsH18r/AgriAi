@@ -28,6 +28,15 @@ class SchedulerService:
         from app.services.agent_service import smart_agent
         from app.services.notification_service import notification_service
         
+        # Daily price data collection at 6 PM IST (after markets close)
+        self.scheduler.add_job(
+            self._daily_data_collection_job,
+            CronTrigger(hour=18, minute=0),
+            id='daily_price_collection',
+            name='Daily Market Price Collection',
+            replace_existing=True
+        )
+        
         # Daily analysis at 6 AM
         self.scheduler.add_job(
             lambda: self._daily_monitoring_job(smart_agent, notification_service),
@@ -37,10 +46,10 @@ class SchedulerService:
             replace_existing=True
         )
         
-        # Price alerts every 6 hours
+        # Price alerts every hour
         self.scheduler.add_job(
             self._price_alert_job,
-            CronTrigger(hour='*/6'),
+            CronTrigger(minute=0),
             id='price_alerts',
             name='Price Alert Check',
             replace_existing=True
@@ -48,7 +57,10 @@ class SchedulerService:
         
         self.scheduler.start()
         self.is_running = True
-        logger.info("✅ Production agent started - monitoring 24/7")
+        logger.info("✅ Production scheduler started - monitoring 24/7")
+        logger.info("📊 Daily data collection: 6 PM IST")
+        logger.info("🌅 Daily analysis: 6 AM IST")
+        logger.info("💰 Price alerts: Every 6 hours")
     
     def stop(self):
         """Stop the scheduler"""
@@ -74,9 +86,68 @@ class SchedulerService:
             logger.error(f"Daily job failed: {e}")
     
     def _price_alert_job(self):
-        """6-hour price spike detection"""
-        logger.info(f"💰 Price check at {datetime.now()}")
-        # Can add rapid price change detection here
+        """Hourly price alert check"""
+        logger.info(f"💰 Price alert check at {datetime.now()}")
+        
+        try:
+            from app.services.alert_service import alert_service
+            import asyncio
+            
+            # Run async alert check
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            result = loop.run_until_complete(alert_service.check_all_alerts())
+            loop.close()
+            
+            logger.info(f"✅ Alert check: {result['triggered']}/{result['checked']} triggered")
+            
+        except Exception as e:
+            logger.error(f"❌ Price alert job failed: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
+    
+    def _daily_data_collection_job(self):
+        """Daily market price collection from data.gov.in API"""
+        logger.info(f"📊 Daily price collection at {datetime.now()}")
+        
+        try:
+            from app.services.data_integration_service import DataIntegrationService
+            
+            service = DataIntegrationService()
+            crops = ['wheat', 'rice', 'tomato', 'potato', 'onion', 'maize', 'cotton', 'sugarcane']
+            
+            total_records = 0
+            success_count = 0
+            
+            for crop in crops:
+                try:
+                    # Fetch today's data
+                    api_commodity = service.crop_to_commodity.get(crop.lower(), crop.title())
+                    api_data = service.fetch_real_api_data(commodity=api_commodity, limit=5000)
+                    
+                    if api_data and 'records' in api_data and len(api_data['records']) > 0:
+                        processed_data = service._process_api_data(api_data, crop)
+                        
+                        if processed_data is not None and not processed_data.empty:
+                            service._store_in_database(processed_data)
+                            records_count = len(processed_data)
+                            total_records += records_count
+                            success_count += 1
+                            logger.info(f"✅ {crop.upper()}: {records_count} records collected")
+                        else:
+                            logger.warning(f"⚠️ {crop.upper()}: No valid data")
+                    else:
+                        logger.warning(f"⚠️ {crop.upper()}: No data from API")
+                        
+                except Exception as e:
+                    logger.error(f"❌ {crop.upper()}: {str(e)}")
+            
+            logger.info(f"✅ Daily collection complete: {success_count}/{len(crops)} crops, {total_records} total records")
+            
+        except Exception as e:
+            logger.error(f"❌ Daily collection job failed: {str(e)}")
+            import traceback
+            logger.error(traceback.format_exc())
     
     def run_now(self, job_id: str):
         """Manual trigger for testing"""

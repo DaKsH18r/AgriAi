@@ -64,14 +64,14 @@ export default function WeatherDashboard() {
     })) || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-8">
+    <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            Agriculture Weather Dashboard
+          <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
+            Weather Dashboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-slate-600">
             Real-time weather insights for better farming decisions
           </p>
         </div>
@@ -84,12 +84,12 @@ export default function WeatherDashboard() {
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="Enter city name..."
-              className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
             />
             <button
               type="submit"
               disabled={loading}
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+              className="px-8 py-3 bg-emerald-900 text-white font-semibold rounded-lg hover:bg-emerald-800 disabled:bg-slate-400 transition shadow-sm"
             >
               {loading ? "Loading..." : "Search"}
             </button>
@@ -97,57 +97,63 @@ export default function WeatherDashboard() {
         </form>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg">
             {error}
           </div>
         )}
 
         {/* Current Weather */}
         {currentWeather && (
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-xl shadow-lg">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <Cloud className="text-blue-500" size={32} />
-                <span className="text-sm text-gray-500">Temperature</span>
+                <Cloud className="text-emerald-600" size={32} />
+                <span className="text-sm text-slate-500 font-semibold">
+                  Temperature
+                </span>
               </div>
-              <p className="text-3xl font-bold text-gray-800">
+              <p className="text-3xl font-bold text-slate-900">
                 {currentWeather.temperature}°C
               </p>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-slate-600 mt-2">
                 Feels like {currentWeather.feels_like}°C
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-lg">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <Droplets className="text-blue-500" size={32} />
-                <span className="text-sm text-gray-500">Humidity</span>
+                <Droplets className="text-blue-600" size={32} />
+                <span className="text-sm text-slate-500 font-semibold">
+                  Humidity
+                </span>
               </div>
-              <p className="text-3xl font-bold text-gray-800">
+              <p className="text-3xl font-bold text-slate-900">
                 {currentWeather.humidity}%
               </p>
-              <p className="text-sm text-gray-600 mt-2 capitalize">
+              <p className="text-sm text-slate-600 mt-2 capitalize">
                 {currentWeather.description}
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-xl shadow-lg">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
               <div className="flex items-center justify-between mb-4">
-                <Wind className="text-blue-500" size={32} />
-                <span className="text-sm text-gray-500">Wind Speed</span>
+                <Wind className="text-slate-600" size={32} />
+                <span className="text-sm text-slate-500 font-semibold">
+                  Wind Speed
+                </span>
               </div>
-              <p className="text-3xl font-bold text-gray-800">
+              <p className="text-3xl font-bold text-slate-900">
                 {currentWeather.wind_speed} m/s
               </p>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-sm text-slate-600 mt-2">
                 {currentWeather.city}
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-500 to-green-500 p-6 rounded-xl shadow-lg text-white">
+            <div className="bg-emerald-900 p-6 rounded-xl shadow-sm border border-emerald-800 text-white">
               <div className="flex items-center justify-between mb-4">
                 <TrendingUp size={32} />
-                <span className="text-sm">Status</span>
+                <span className="text-sm font-semibold">Status</span>
               </div>
               <p className="text-2xl font-bold">Good</p>
               <p className="text-sm mt-2 opacity-90">Favorable for farming</p>
@@ -163,15 +169,15 @@ export default function WeatherDashboard() {
                 const isOptimal = alert.severity === "low";
                 const isHigh = alert.severity === "high";
                 const bgColor = isOptimal
-                  ? "bg-green-50 border-green-400"
+                  ? "bg-green-50 border-green-300"
                   : isHigh
-                  ? "bg-red-50 border-red-400"
-                  : "bg-yellow-50 border-yellow-400";
+                  ? "bg-red-50 border-red-300"
+                  : "bg-yellow-50 border-yellow-300";
                 const badgeColor = isOptimal
-                  ? "bg-green-100 text-green-700"
+                  ? "bg-green-100 text-green-700 font-semibold"
                   : isHigh
-                  ? "bg-red-100 text-red-700"
-                  : "bg-yellow-100 text-yellow-700";
+                  ? "bg-red-100 text-red-700 font-semibold"
+                  : "bg-yellow-100 text-yellow-700 font-semibold";
                 const title = isOptimal
                   ? "✓ Optimal Conditions"
                   : isHigh
@@ -181,14 +187,14 @@ export default function WeatherDashboard() {
                 return (
                   <div
                     key={index}
-                    className={`${bgColor} border-l-4 p-4 rounded-lg`}
+                    className={`${bgColor} border-l-4 p-4 rounded-lg shadow-sm`}
                   >
                     <div className="flex items-start">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800 mb-1">
+                        <h3 className="font-semibold text-slate-800 mb-1">
                           {title}
                         </h3>
-                        <p className="text-sm text-gray-700 mb-2">
+                        <p className="text-sm text-slate-700 mb-2">
                           {alert.message}
                         </p>
                         <span
@@ -209,11 +215,11 @@ export default function WeatherDashboard() {
 
         {/* Temperature Chart */}
         {chartData.length > 0 && (
-          <div className="bg-white p-6 rounded-xl shadow-lg">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             {/* 5-Day Forecast */}
             {forecast && (
-              <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
+                <h3 className="text-xl font-semibold text-slate-900 mb-4">
                   5-Day Weather Forecast
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -223,22 +229,22 @@ export default function WeatherDashboard() {
                     .map((day, index) => (
                       <div
                         key={index}
-                        className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center"
+                        className="bg-slate-50 p-4 rounded-lg text-center border border-slate-200"
                       >
-                        <p className="text-sm font-medium text-gray-600 mb-2">
+                        <p className="text-sm font-semibold text-slate-600 mb-2">
                           {new Date(day.datetime).toLocaleDateString("en-US", {
                             weekday: "short",
                             month: "short",
                             day: "numeric",
                           })}
                         </p>
-                        <p className="text-3xl font-bold text-blue-600 mb-2">
+                        <p className="text-3xl font-bold text-emerald-900 mb-2">
                           {Math.round(day.temperature)}°C
                         </p>
-                        <p className="text-sm text-gray-700 capitalize mb-2">
+                        <p className="text-sm text-slate-700 capitalize mb-2">
                           {day.description}
                         </p>
-                        <div className="flex justify-center items-center gap-2 text-xs text-gray-600">
+                        <div className="flex justify-center items-center gap-2 text-xs text-slate-600">
                           <Droplets size={14} />
                           <span>{day.rain_probability}%</span>
                         </div>
@@ -247,7 +253,7 @@ export default function WeatherDashboard() {
                 </div>
               </div>
             )}
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+            <h3 className="text-xl font-semibold text-slate-900 mb-4">
               24-Hour Temperature Forecast
             </h3>
             <ResponsiveContainer width="100%" height={300}>

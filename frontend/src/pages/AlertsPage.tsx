@@ -1,141 +1,129 @@
-import React, { useState } from "react";
-import {
-  Bell,
-  Cloud,
-  TrendingUp,
-  AlertTriangle,
-  Info,
-  CheckCircle,
-  Pin,
-  Trash2,
-} from "lucide-react";
-import { EmptyState } from "../components/ui/EmptyState";
+import React, { useState, useEffect } from "react";
+import { Bell, TrendingUp, Plus, Trash2, X, Loader } from "lucide-react";
+import axios from "axios";
 
-interface Alert {
+interface PriceAlert {
   id: string;
-  type: "weather" | "market" | "disease" | "system";
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-  pinned: boolean;
-  priority: "low" | "medium" | "high";
+  crop: string;
+  city: string;
+  alert_type: "ABOVE" | "BELOW" | "CHANGE";
+  threshold_price: number | null;
+  threshold_percentage: number | null;
+  is_active: boolean;
+  notification_method: string;
+  last_triggered_at: string | null;
+  created_at: string;
 }
 
 export const AlertsPage: React.FC = () => {
-  const [alerts, setAlerts] = useState<Alert[]>([
-    {
-      id: "1",
-      type: "weather",
-      title: "Heavy Rain Alert",
-      message:
-        "Expect 50mm rainfall in the next 24 hours. Consider postponing irrigation.",
-      timestamp: "2025-11-12T10:30:00",
-      read: false,
-      pinned: true,
-      priority: "high",
-    },
-    {
-      id: "2",
-      type: "market",
-      title: "Rice Price Surge",
-      message:
-        "Rice prices increased by 15% in your local mandi. Good time to sell.",
-      timestamp: "2025-11-12T09:15:00",
-      read: false,
-      pinned: false,
-      priority: "medium",
-    },
-    {
-      id: "3",
-      type: "disease",
-      title: "Disease Risk Warning",
-      message: "High humidity detected. Monitor for leaf blast in rice crops.",
-      timestamp: "2025-11-11T16:45:00",
-      read: true,
-      pinned: false,
-      priority: "high",
-    },
-    {
-      id: "4",
-      type: "system",
-      title: "New Feature Available",
-      message: "Check out our new yield prediction model with 95% accuracy!",
-      timestamp: "2025-11-10T14:00:00",
-      read: true,
-      pinned: false,
-      priority: "low",
-    },
-  ]);
+  const [alerts, setAlerts] = useState<PriceAlert[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [formData, setFormData] = useState({
+    crop: "wheat",
+    city: "Delhi",
+    alert_type: "BELOW",
+    threshold_price: "",
+    threshold_percentage: "",
+    notification_method: "EMAIL",
+  });
 
-  const [filterType, setFilterType] = useState<string>("all");
+  useEffect(() => {
+    fetchAlerts();
+  }, []);
 
-  const toggleRead = (id: string) => {
-    setAlerts(alerts.map((a) => (a.id === id ? { ...a, read: !a.read } : a)));
-  };
-
-  const togglePin = (id: string) => {
-    setAlerts(
-      alerts.map((a) => (a.id === id ? { ...a, pinned: !a.pinned } : a))
-    );
-  };
-
-  const deleteAlert = (id: string) => {
-    setAlerts(alerts.filter((a) => a.id !== id));
-  };
-
-  const markAllRead = () => {
-    setAlerts(alerts.map((a) => ({ ...a, read: true })));
-  };
-
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "weather":
-        return <Cloud className="text-blue-600" size={24} />;
-      case "market":
-        return <TrendingUp className="text-green-600" size={24} />;
-      case "disease":
-        return <AlertTriangle className="text-red-600" size={24} />;
-      default:
-        return <Info className="text-gray-600" size={24} />;
+  const fetchAlerts = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:8000/api/alerts", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAlerts(response.data);
+    } catch (error) {
+      console.error("Error fetching alerts:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "border-l-4 border-l-red-500";
-      case "medium":
-        return "border-l-4 border-l-yellow-500";
-      default:
-        return "border-l-4 border-l-gray-300";
+  const createAlert = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem("token");
+      const payload: any = {
+        crop: formData.crop,
+        city: formData.city,
+        alert_type: formData.alert_type,
+        notification_method: formData.notification_method,
+      };
+
+      if (formData.alert_type === "CHANGE") {
+        payload.threshold_percentage = parseFloat(
+          formData.threshold_percentage
+        );
+      } else {
+        payload.threshold_price = parseFloat(formData.threshold_price);
+      }
+
+      await axios.post("http://localhost:8000/api/alerts", payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      alert(
+        "✅ Price alert created! You'll receive in-app and email notifications when conditions are met."
+      );
+
+      setShowCreateModal(false);
+      setFormData({
+        crop: "wheat",
+        city: "Delhi",
+        alert_type: "BELOW",
+        threshold_price: "",
+        threshold_percentage: "",
+        notification_method: "EMAIL",
+      });
+      fetchAlerts();
+    } catch (error) {
+      console.error("Error creating alert:", error);
+      alert("Failed to create alert");
     }
   };
 
-  const filteredAlerts = alerts
-    .filter((a) => filterType === "all" || a.type === filterType)
-    .sort((a, b) => {
-      if (a.pinned && !b.pinned) return -1;
-      if (!a.pinned && b.pinned) return 1;
-      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-    });
+  const deleteAlert = async (id: string) => {
+    if (!confirm("Delete this alert?")) return;
 
-  if (alerts.length === 0) {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:8000/api/alerts/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchAlerts();
+    } catch (error) {
+      console.error("Error deleting alert:", error);
+    }
+  };
+
+  const toggleActive = async (alert: PriceAlert) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.patch(
+        `http://localhost:8000/api/alerts/${alert.id}`,
+        { is_active: !alert.is_active },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchAlerts();
+    } catch (error) {
+      console.error("Error toggling alert:", error);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
-        <div className="max-w-4xl mx-auto">
-          <EmptyState
-            icon={Bell}
-            title="No Alerts"
-            description="You're all caught up! We'll notify you when there's something important."
-            action={undefined}
-          />
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader className="animate-spin text-green-600" size={48} />
       </div>
     );
   }
-
-  const unreadCount = alerts.filter((a) => !a.read).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
@@ -143,159 +131,283 @@ export const AlertsPage: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Alerts</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Price Alerts
+            </h1>
             <p className="text-gray-600">
-              {unreadCount > 0
-                ? `${unreadCount} unread notification${
-                    unreadCount > 1 ? "s" : ""
+              {alerts.length > 0
+                ? `Managing ${alerts.length} alert${
+                    alerts.length > 1 ? "s" : ""
                   }`
-                : "All caught up!"}
+                : "Create alerts to get notified in the website when prices change"}
             </p>
           </div>
-          {unreadCount > 0 && (
-            <button
-              onClick={markAllRead}
-              className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl font-semibold hover:bg-gray-50 transition"
-            >
-              <CheckCircle size={18} />
-              Mark All Read
-            </button>
-          )}
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition shadow-lg"
+          >
+            <Plus size={20} />
+            Create Alert
+          </button>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-          {[
-            { id: "all", label: "All", icon: Bell },
-            { id: "weather", label: "Weather", icon: Cloud },
-            { id: "market", label: "Market", icon: TrendingUp },
-            { id: "disease", label: "Disease", icon: AlertTriangle },
-            { id: "system", label: "System", icon: Info },
-          ].map((filter) => (
+        {/* Alerts List */}
+        {alerts.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <Bell className="mx-auto text-gray-400 mb-4" size={64} />
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              No Price Alerts Yet
+            </h3>
+            <p className="text-gray-600 mb-2">
+              Set up alerts to get notified <strong>in the website</strong> when
+              crop prices reach your target
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              💰 Hourly checks • 🔔 In-app notifications • 📧 Email alerts
+            </p>
             <button
-              key={filter.id}
-              onClick={() => setFilterType(filter.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition ${
-                filterType === filter.id
-                  ? "bg-green-500 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-              }`}
+              onClick={() => setShowCreateModal(true)}
+              className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition"
             >
-              <filter.icon size={18} />
-              {filter.label}
+              Create Your First Alert
             </button>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {alerts.map((alert) => (
+              <div
+                key={alert.id}
+                className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${
+                  alert.is_active ? "border-l-green-500" : "border-l-gray-300"
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  <TrendingUp
+                    className="text-green-600 flex-shrink-0"
+                    size={24}
+                  />
 
-        {/* Alerts Feed */}
-        <div className="space-y-4">
-          {filteredAlerts.map((alert) => (
-            <div
-              key={alert.id}
-              className={`bg-white rounded-2xl shadow-lg p-6 ${getPriorityColor(
-                alert.priority
-              )} ${!alert.read ? "ring-2 ring-green-200" : ""} animate-slideUp`}
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">{getIcon(alert.type)}</div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4 mb-2">
-                    <h3
-                      className={`text-lg font-bold ${
-                        !alert.read ? "text-gray-900" : "text-gray-600"
-                      }`}
-                    >
-                      {alert.title}
-                      {alert.pinned && (
-                        <Pin
-                          size={16}
-                          className="inline ml-2 text-yellow-600"
-                          fill="currentColor"
-                        />
-                      )}
-                    </h3>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => togglePin(alert.id)}
-                        className={`p-2 rounded-lg transition ${
-                          alert.pinned
-                            ? "bg-yellow-100 text-yellow-600"
-                            : "hover:bg-gray-100 text-gray-400"
-                        }`}
-                        title={alert.pinned ? "Unpin" : "Pin"}
-                      >
-                        <Pin size={18} />
-                      </button>
-                      <button
-                        onClick={() => toggleRead(alert.id)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition text-gray-400"
-                        title={alert.read ? "Mark unread" : "Mark read"}
-                      >
-                        {alert.read ? (
-                          <Bell size={18} />
-                        ) : (
-                          <CheckCircle size={18} className="text-green-600" />
-                        )}
-                      </button>
-                      <button
-                        onClick={() => deleteAlert(alert.id)}
-                        className="p-2 hover:bg-red-50 rounded-lg transition text-red-600"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-1">
+                          {alert.crop.toUpperCase()} - {alert.city}
+                        </h3>
+                        <p className="text-gray-600">
+                          {alert.alert_type === "ABOVE" &&
+                            `Alert when price goes above ₹${alert.threshold_price}/kg`}
+                          {alert.alert_type === "BELOW" &&
+                            `Alert when price drops below ₹${alert.threshold_price}/kg`}
+                          {alert.alert_type === "CHANGE" &&
+                            `Alert when price changes by ${alert.threshold_percentage}%`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => toggleActive(alert)}
+                          className={`px-4 py-2 rounded-lg font-medium transition ${
+                            alert.is_active
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
+                        >
+                          {alert.is_active ? "Active" : "Paused"}
+                        </button>
+                        <button
+                          onClick={() => deleteAlert(alert.id)}
+                          className="p-2 hover:bg-red-50 rounded-lg transition text-red-600"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  <p
-                    className={`mb-3 ${
-                      !alert.read ? "text-gray-700" : "text-gray-500"
-                    }`}
-                  >
-                    {alert.message}
-                  </p>
-
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span>
-                      {new Date(alert.timestamp).toLocaleString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                    <span className="capitalize">{alert.type}</span>
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        alert.priority === "high"
-                          ? "bg-red-100 text-red-700"
-                          : alert.priority === "medium"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-600"
-                      }`}
-                    >
-                      {alert.priority}
-                    </span>
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mt-3">
+                      <span>📧 {alert.notification_method}</span>
+                      <span>•</span>
+                      <span>
+                        Created{" "}
+                        {new Date(alert.created_at).toLocaleDateString()}
+                      </span>
+                      {alert.last_triggered_at && (
+                        <>
+                          <span>•</span>
+                          <span className="text-yellow-600 font-medium">
+                            Last triggered{" "}
+                            {new Date(alert.last_triggered_at).toLocaleString()}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        {/* Settings Info */}
-        <div className="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-6 border border-blue-200">
-          <h3 className="font-bold text-gray-900 mb-2">
-            Notification Settings
-          </h3>
-          <p className="text-gray-600 mb-4">
-            Manage your notification preferences in Settings
-          </p>
-          <button className="text-blue-600 font-semibold hover:underline">
-            Go to Settings →
-          </button>
-        </div>
+        {/* Create Modal */}
+        {showCreateModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Create Price Alert
+                </h2>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={createAlert} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Crop
+                  </label>
+                  <select
+                    value={formData.crop}
+                    onChange={(e) =>
+                      setFormData({ ...formData, crop: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="wheat">Wheat</option>
+                    <option value="rice">Rice</option>
+                    <option value="tomato">Tomato</option>
+                    <option value="onion">Onion</option>
+                    <option value="potato">Potato</option>
+                    <option value="cotton">Cotton</option>
+                    <option value="sugarcane">Sugarcane</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    placeholder="e.g., Delhi"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Alert Type
+                  </label>
+                  <select
+                    value={formData.alert_type}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        alert_type: e.target.value as any,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="ABOVE">Price goes above threshold</option>
+                    <option value="BELOW">Price drops below threshold</option>
+                    <option value="CHANGE">Price changes by percentage</option>
+                  </select>
+                </div>
+
+                {formData.alert_type === "CHANGE" ? (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Percentage Change (%)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={formData.threshold_percentage}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          threshold_percentage: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="e.g., 5"
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Price Threshold (₹/kg)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={formData.threshold_price}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          threshold_price: e.target.value,
+                        })
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      placeholder="e.g., 2500"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Notification Method
+                  </label>
+                  <select
+                    value={formData.notification_method}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        notification_method: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    <option value="EMAIL">Email + In-App Notification</option>
+                    <option value="SMS">SMS (coming soon)</option>
+                    <option value="BOTH">All Methods (coming soon)</option>
+                  </select>
+                  <p className="mt-2 text-xs text-gray-500">
+                    🔔 In-app notifications are always enabled - check the bell
+                    icon in header
+                  </p>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateModal(false)}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition"
+                  >
+                    Create Alert
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

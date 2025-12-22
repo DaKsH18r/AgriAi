@@ -183,11 +183,17 @@ export const LoginPage: React.FC = () => {
           {/* Google Login Button */}
           <button
             type="button"
-            onClick={() =>
-              (window.location.href =
-                "http://localhost:8000/api/auth/google/login")
-            }
+            onClick={() => {
+              const apiUrl =
+                import.meta.env.VITE_API_BASE_URL ||
+                "http://localhost:8000/api";
+              window.location.href = `${apiUrl.replace(
+                "/api",
+                ""
+              )}/api/auth/google/login`;
+            }}
             className="w-full flex items-center justify-center gap-3 px-6 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm"
+            title="Google login may not work in Docker environment. Use email/password login instead."
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path

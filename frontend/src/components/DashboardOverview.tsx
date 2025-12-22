@@ -6,7 +6,6 @@ import {
   AlertCircle,
   TrendingUp,
   TrendingDown,
-  Loader,
 } from "lucide-react";
 import {
   weatherAPI,
@@ -14,6 +13,8 @@ import {
   notificationAPI,
   agentAPI,
 } from "../services/api";
+import { ErrorDisplay } from "./ErrorDisplay";
+import { LoadingSkeleton } from "./LoadingSkeleton";
 
 interface MetricCardProps {
   title: string;
@@ -35,39 +36,39 @@ function MetricCard({
   color,
 }: MetricCardProps) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between mb-4">
+    <div className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all">
+      <div className="flex items-start justify-between mb-3">
         <div
-          className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center`}
+          className={`w-10 h-10 ${color} rounded-lg flex items-center justify-center`}
         >
           {icon}
         </div>
         <div className="flex items-center space-x-1">
           {trend === "up" && (
-            <TrendingUp size={16} className="text-green-600" />
+            <TrendingUp size={14} className="text-emerald-600" />
           )}
           {trend === "down" && (
-            <TrendingDown size={16} className="text-red-600" />
+            <TrendingDown size={14} className="text-red-600" />
           )}
           <span
-            className={`text-sm font-medium ${
+            className={`text-xs font-medium ${
               trend === "up"
-                ? "text-green-600"
+                ? "text-emerald-600"
                 : trend === "down"
                 ? "text-red-600"
-                : "text-gray-500"
+                : "text-slate-500"
             }`}
           >
             {trendValue}
           </span>
         </div>
       </div>
-      <h3 className="text-sm font-medium text-gray-600 mb-2">{title}</h3>
-      <div className="flex items-baseline space-x-2">
-        <span className="text-3xl font-bold font-mono text-agri-dark">
-          {value}
-        </span>
-        <span className="text-sm text-gray-500 font-mono">{unit}</span>
+      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+        {title}
+      </h3>
+      <div className="flex items-baseline space-x-1.5">
+        <span className="text-2xl font-semibold text-slate-900">{value}</span>
+        <span className="text-sm text-slate-500">{unit}</span>
       </div>
     </div>
   );
@@ -75,6 +76,7 @@ function MetricCard({
 
 export function DashboardOverview() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const userName = localStorage.getItem("userName") || "Farmer";
   const userLocation = localStorage.getItem("userLocation") || "Delhi";
 
@@ -84,46 +86,57 @@ export function DashboardOverview() {
   const [wheatPrice, setWheatPrice] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      setLoading(true);
-      try {
-        // Fetch weather for user's location
-        const weather = await weatherAPI.getCurrentWeather(userLocation);
-        setCurrentWeather(weather);
-
-        // Fetch notification count
-        try {
-          const notifData = await notificationAPI.getUnreadCount();
-          setUnreadCount(notifData.unread_count);
-        } catch {
-          // User might not be logged in
-          setUnreadCount(0);
-        }
-
-        // Fetch recent agent analyses
-        try {
-          const history = await agentAPI.getHistory(3);
-          setRecentAnalyses(history.analyses);
-        } catch {
-          setRecentAnalyses([]);
-        }
-
-        // Fetch wheat price for sample metric
-        try {
-          const priceData = await priceAPI.getPrediction("wheat", 7);
-          setWheatPrice(priceData.current_price);
-        } catch {
-          setWheatPrice(null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDashboardData();
   }, [userLocation]);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Fetch weather for user's location
+      try {
+        const weather = await weatherAPI.getCurrentWeather(userLocation);
+        setCurrentWeather(weather);
+      } catch (err) {
+        console.warn("Failed to fetch weather data:", err);
+        // Continue with other requests
+      }
+
+      // Fetch notification count
+      try {
+        const notifData = await notificationAPI.getUnreadCount();
+        setUnreadCount(notifData.unread_count);
+      } catch (err) {
+        console.warn("Failed to fetch notifications:", err);
+        setUnreadCount(0);
+      }
+
+      // Fetch recent agent analyses
+      try {
+        const history = await agentAPI.getHistory(3);
+        setRecentAnalyses(history.analyses);
+      } catch (err) {
+        console.warn("Failed to fetch analyses:", err);
+        setRecentAnalyses([]);
+      }
+
+      // Fetch wheat price for sample metric
+      try {
+        const priceData = await priceAPI.getPrediction("wheat", 7);
+        setWheatPrice(priceData.current_price);
+      } catch (err) {
+        console.warn("Failed to fetch price data:", err);
+        setWheatPrice(null);
+      }
+    } catch (error) {
+      console.error("Failed to fetch dashboard data:", error);
+      setError(
+        "Unable to load dashboard data. Please try refreshing the page."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const metrics = [
     {
@@ -136,7 +149,7 @@ export function DashboardOverview() {
       trendValue: currentWeather
         ? `Feels ${Math.round(currentWeather.feels_like)}°C`
         : "",
-      icon: <Thermometer size={24} className="text-orange-600" />,
+      icon: <Thermometer size={20} className="text-orange-600" />,
       color: "bg-orange-50",
     },
     {
@@ -145,7 +158,7 @@ export function DashboardOverview() {
       unit: "%",
       trend: "stable" as const,
       trendValue: currentWeather?.description || "",
-      icon: <Droplets size={24} className="text-blue-600" />,
+      icon: <Droplets size={20} className="text-blue-600" />,
       color: "bg-blue-50",
     },
     {
@@ -156,8 +169,8 @@ export function DashboardOverview() {
       unit: "km/h",
       trend: "stable" as const,
       trendValue: currentWeather ? currentWeather.city : "",
-      icon: <Wind size={24} className="text-gray-600" />,
-      color: "bg-gray-50",
+      icon: <Wind size={20} className="text-slate-600" />,
+      color: "bg-slate-50",
     },
     {
       title: "Active Alerts",
@@ -165,57 +178,80 @@ export function DashboardOverview() {
       unit: "alerts",
       trend: unreadCount > 0 ? ("up" as const) : ("stable" as const),
       trendValue: unreadCount > 0 ? "Needs attention" : "All clear",
-      icon: <AlertCircle size={24} className="text-red-600" />,
+      icon: <AlertCircle size={20} className="text-red-600" />,
       color: "bg-red-50",
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader className="animate-spin text-green-600" size={48} />
+      <div className="space-y-6">
+        <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl p-6 h-48 animate-pulse"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <LoadingSkeleton key={i} variant="card" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <LoadingSkeleton variant="chart" />
+          </div>
+          <div>
+            <LoadingSkeleton variant="list" />
+          </div>
+        </div>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorDisplay
+        message={error}
+        onRetry={fetchDashboardData}
+        showRetry={true}
+      />
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Morning Briefing Banner */}
-      <div className="bg-gradient-to-r from-agri-dark to-agri-green rounded-xl shadow-lg p-8 text-white">
+      {/* Greeting Banner */}
+      <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Good Morning, {userName}! ☀️
+            <h1 className="text-2xl font-semibold mb-1">
+              Good Morning, {userName} ☀️
             </h1>
-            <p className="text-white/90 text-lg mb-4">
+            <p className="text-emerald-100 text-sm mb-4">
               Here's your farm status for today
             </p>
-            <div className="space-y-2 text-white/80">
+            <div className="space-y-1.5 text-sm text-emerald-50">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Field A: Optimal conditions ✓</span>
+                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                <span>Field A: Optimal conditions</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                <span>Field B: Irrigation scheduled ✓</span>
+                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                <span>Field B: Irrigation scheduled</span>
               </div>
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                <span>Field C: Requires attention - Pest detected</span>
+                <div className="w-1.5 h-1.5 bg-yellow-400 rounded-full"></div>
+                <span>Field C: Pest detected - attention needed</span>
               </div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-5xl font-bold font-mono mb-2">
+            <div className="text-4xl font-semibold mb-1">
               {currentWeather
                 ? `${Math.round(currentWeather.temperature)}°C`
                 : "--"}
             </div>
-            <p className="text-white/70">
+            <p className="text-emerald-100 text-sm">
               {currentWeather?.description || "Loading..."}
             </p>
             {wheatPrice && (
-              <p className="text-white/60 text-sm mt-2">
+              <p className="text-emerald-200 text-xs mt-2">
                 Wheat: ₹{wheatPrice.toFixed(2)}/kg
               </p>
             )}
@@ -233,17 +269,17 @@ export function DashboardOverview() {
       {/* Content Split: Chart + Activity Log */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Crop Health Chart Placeholder */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-agri-dark mb-4">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6">
+          <h3 className="text-base font-semibold text-slate-900 mb-4">
             Crop Health Index
           </h3>
-          <div className="h-80 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+          <div className="h-80 flex items-center justify-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
             <div className="text-center">
-              <div className="text-6xl mb-4">📊</div>
-              <p className="text-gray-500 font-medium">
+              <div className="text-5xl mb-3">📊</div>
+              <p className="text-slate-600 font-medium text-sm">
                 Chart Integration Pending
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-xs text-slate-400 mt-1">
                 Connect Recharts or Chart.js here
               </p>
             </div>
@@ -251,13 +287,13 @@ export function DashboardOverview() {
         </div>
 
         {/* Right: Recent AI Analyses */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <h3 className="text-base font-semibold text-slate-900 mb-4">
             Recent AI Analyses
           </h3>
           <div className="space-y-4">
             {recentAnalyses.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-slate-400">
                 <p className="text-sm">No analyses yet</p>
                 <p className="text-xs mt-1">Try the AI Agent feature!</p>
               </div>
@@ -265,25 +301,25 @@ export function DashboardOverview() {
               recentAnalyses.map((analysis) => (
                 <div
                   key={analysis.id}
-                  className="flex items-start space-x-3 pb-4 border-b border-gray-100 last:border-0 last:pb-0"
+                  className="flex items-start space-x-3 pb-4 border-b border-slate-100 last:border-0 last:pb-0"
                 >
                   <div
-                    className={`w-2 h-2 rounded-full mt-2 ${
+                    className={`w-2 h-2 rounded-full mt-1.5 ${
                       analysis.decision.action === "SELL_NOW"
-                        ? "bg-green-500"
+                        ? "bg-emerald-500"
                         : analysis.decision.action === "WAIT"
                         ? "bg-yellow-500"
                         : "bg-blue-500"
                     }`}
                   ></div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-slate-900">
                       {analysis.crop} - {analysis.decision.action}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       {new Date(analysis.timestamp).toLocaleDateString()}
                     </p>
-                    <p className="text-xs text-gray-600 mt-1">
+                    <p className="text-xs text-slate-600 mt-0.5">
                       Confidence:{" "}
                       {Math.round(analysis.decision.confidence * 100)}%
                     </p>

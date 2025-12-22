@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.routers import weather, chatbot, prices, yield_prediction, agent, notifications, admin, errors
+from app.routers import weather, chatbot, prices, yield_prediction, agent, notifications, admin, errors, alerts, profile
 from app.api.v1.endpoints import auth
 from app.services.scheduler_service import scheduler_service
 from app.database import init_db
@@ -50,7 +50,7 @@ app.add_middleware(
     session_cookie="oauth_session",
     max_age=600,  # OAuth session expires in 10 minutes
     same_site="lax",
-    https_only=False  # Set to True in production with HTTPS
+    https_only=settings.ENVIRONMENT == "production"  # Enable HTTPS in production
 )
 
 # CORS - Allow multiple origins for development
@@ -79,6 +79,8 @@ app.include_router(prices.router, prefix="/api/prices", tags=["Prices"])
 app.include_router(yield_prediction.router, prefix="/api/yield", tags=["Yield Prediction"])
 app.include_router(agent.router, prefix="/api/agent", tags=["AI Agent"])  # New autonomous agent
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])  # Notification system
+app.include_router(alerts.router, prefix="/api/alerts", tags=["Price Alerts"])  # NEW: Price alerts
+app.include_router(profile.router, prefix="/api/profile", tags=["User Profile"])  # NEW: User profiles
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])  # Admin panel
 app.include_router(errors.router, prefix="/api/errors", tags=["Error Tracking"])  # Client error logging
 

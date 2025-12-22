@@ -1,11 +1,12 @@
 import axios, { AxiosError } from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 // Configure axios with timeout and interceptors
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000, // 30 second timeout
+  timeout: 60000, // 60 second timeout (agent analysis can take 30-40s)
 });
 
 // Response interceptor for better error handling
@@ -253,6 +254,7 @@ export interface AgentAnalysis {
   city: string;
   current_price: number;
   predicted_price: number | null;
+  days_ahead?: number;
   decision: Decision;
   market_signals: MarketSignal[];
   llm_insights: string | null;
@@ -287,10 +289,15 @@ export interface AgentStatus {
 
 // Agent API calls
 export const agentAPI = {
-  analyzeCrop: async (crop: string, city: string): Promise<AgentAnalysis> => {
+  analyzeCrop: async (
+    crop: string,
+    city: string,
+    days: number = 7
+  ): Promise<AgentAnalysis> => {
     const response = await apiClient.post("/agent/analyze", {
       crop,
       city,
+      days,
     });
     return response.data;
   },
@@ -388,5 +395,19 @@ export const notificationAPI = {
     await axios.delete(`${API_BASE_URL}/notifications/${notificationId}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
+  },
+};
+
+// Chatbot API
+export const chatbotAPI = {
+  ask: async (
+    message: string,
+    history: Array<{ role: string; content: string }> = []
+  ): Promise<{ response: string }> => {
+    const response = await apiClient.post("/chatbot/ask", {
+      message,
+      history,
+    });
+    return response.data;
   },
 };

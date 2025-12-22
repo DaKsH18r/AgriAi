@@ -49,7 +49,8 @@ oauth.register(
     name='google',
     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
     client_kwargs={
-        'scope': 'openid email profile'
+        'scope': 'openid email profile',
+        'timeout': 30.0  # Increase timeout for Docker environments
     }
 )
 
@@ -305,8 +306,15 @@ async def reset_password(
 @router.get("/google/login")
 async def google_login(request: Request):
     """Initiate Google OAuth login."""
-    redirect_uri = settings.GOOGLE_REDIRECT_URI
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+    try:
+        redirect_uri = settings.GOOGLE_REDIRECT_URI
+        return await oauth.google.authorize_redirect(request, redirect_uri)
+    except Exception as e:
+        logger.error(f"Google OAuth error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google login is temporarily unavailable. Please use email/password login or try again later."
+        )
 
 
 @router.get("/google/callback")

@@ -18,6 +18,15 @@ class User(Base):
     preferred_language = Column(String, default="en")  # en, hi, ta, te, bn
     notification_enabled = Column(Boolean, default=True)
     
+    # New user account fields
+    user_type = Column(String, default="FARMER")  # FARMER, TRADER, ADMIN
+    farm_size = Column(Integer, nullable=True)  # In acres
+    farm_location_lat = Column(Integer, nullable=True)
+    farm_location_lon = Column(Integer, nullable=True)
+    language_preference = Column(String, default="en")
+    sms_enabled = Column(Boolean, default=False)
+    whatsapp_enabled = Column(Boolean, default=False)
+    
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     is_superuser = Column(Boolean, default=False)
@@ -31,6 +40,8 @@ class User(Base):
     
     # Relationships
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    price_alerts = relationship("PriceAlert", back_populates="user", cascade="all, delete-orphan")
+    user_crops = relationship("UserCrop", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(email={self.email}, name={self.full_name})>"

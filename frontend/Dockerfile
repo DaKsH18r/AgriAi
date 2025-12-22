@@ -4,8 +4,8 @@ FROM node:20-alpine as builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files and npm config
+COPY package.json package-lock.json .npmrc ./
 
 # Install dependencies
 RUN npm ci

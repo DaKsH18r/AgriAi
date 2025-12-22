@@ -19,12 +19,18 @@ router = APIRouter()
 class AnalysisRequest(BaseModel):
     crop: str
     city: Optional[str] = "Delhi"
+    days: Optional[int] = 7  # Prediction period (7, 30, 90, 180 days)
 
 
 @router.post("/analyze")
 async def analyze_crop(request: AnalysisRequest):
     """
     Get instant crop analysis from the AI agent
+    
+    Args:
+    - crop: Crop name (wheat, rice, tomato, etc.)
+    - city: Location for weather data (default: Delhi)
+    - days: Prediction period - 7, 30, 90, or 180 days (default: 7)
     
     Returns:
     - Action recommendation (SELL_NOW, WAIT, HOLD)
@@ -41,7 +47,8 @@ async def analyze_crop(request: AnalysisRequest):
     analysis = smart_agent.analyze_crop(
         crop=request.crop,
         city=request.city,
-        user_preferences=user_prefs
+        user_preferences=user_prefs,
+        days_ahead=request.days
     )
     
     return analysis

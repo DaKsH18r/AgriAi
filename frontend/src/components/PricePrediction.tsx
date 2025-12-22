@@ -1,7 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, AlertCircle } from 'lucide-react';
-import { priceAPI } from '../services/api';
-import type { PricePrediction as PricePredictionType, MarketComparisonData } from '../services/api';
+import { useState, useEffect, useCallback } from "react";
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  AlertCircle,
+} from "lucide-react";
+import { priceAPI } from "../services/api";
+import type {
+  PricePrediction as PricePredictionType,
+  MarketComparisonData,
+} from "../services/api";
 import {
   LineChart,
   Line,
@@ -13,30 +21,33 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-} from 'recharts';
+} from "recharts";
 
 export default function PricePrediction() {
-  const [selectedCrop, setSelectedCrop] = useState('wheat');
+  const [selectedCrop, setSelectedCrop] = useState("wheat");
   const [predictionDays, setPredictionDays] = useState(30);
-  const [prediction, setPrediction] = useState<PricePredictionType | null>(null);
-  const [marketComparison, setMarketComparison] = useState<MarketComparisonData | null>(null);
+  const [prediction, setPrediction] = useState<PricePredictionType | null>(
+    null
+  );
+  const [marketComparison, setMarketComparison] =
+    useState<MarketComparisonData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const crops = [
-    { value: 'wheat', label: 'Wheat (गेहूं)', icon: '🌾' },
-    { value: 'rice', label: 'Rice (चावल)', icon: '🍚' },
-    { value: 'tomato', label: 'Tomato (टमाटर)', icon: '🍅' },
-    { value: 'onion', label: 'Onion (प्याज)', icon: '🧅' },
-    { value: 'potato', label: 'Potato (आलू)', icon: '🥔' },
-    { value: 'cotton', label: 'Cotton (कपास)', icon: '🌱' },
-    { value: 'sugarcane', label: 'Sugarcane (गन्ना)', icon: '🎋' },
+    { value: "wheat", label: "Wheat (गेहूं)", icon: "🌾" },
+    { value: "rice", label: "Rice (चावल)", icon: "🍚" },
+    { value: "tomato", label: "Tomato (टमाटर)", icon: "🍅" },
+    { value: "onion", label: "Onion (प्याज)", icon: "🧅" },
+    { value: "potato", label: "Potato (आलू)", icon: "🥔" },
+    { value: "cotton", label: "Cotton (कपास)", icon: "🌱" },
+    { value: "sugarcane", label: "Sugarcane (गन्ना)", icon: "🎋" },
   ];
 
   // ✅ Memoized fetch function (fixes useEffect dependency warning)
   const fetchPredictions = useCallback(async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       const [predData, marketData] = await Promise.all([
         priceAPI.getPrediction(selectedCrop, predictionDays),
@@ -45,7 +56,7 @@ export default function PricePrediction() {
       setPrediction(predData);
       setMarketComparison(marketData);
     } catch (err) {
-      setError('Failed to fetch price data. Please try again.');
+      setError("Failed to fetch price data. Please try again.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -62,40 +73,55 @@ export default function PricePrediction() {
     prediction?.historical_data && prediction?.predictions
       ? [
           ...prediction.historical_data.slice(-30).map((item) => ({
-            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            date: new Date(item.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
             actual: item.price,
-            type: 'Historical',
+            type: "Historical",
           })),
           ...prediction.predictions.map((item) => ({
-            date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            date: new Date(item.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
             predicted: item.predicted_price,
-            type: 'Predicted',
+            type: "Predicted",
           })),
         ]
       : [];
 
   const getRecommendationColor = (recommendation: string) => {
-    if (recommendation.startsWith('SELL NOW')) return 'bg-red-100 border-red-500 text-red-700';
-    if (recommendation.startsWith('SELL')) return 'bg-orange-100 border-orange-500 text-orange-700';
-    if (recommendation.startsWith('HOLD')) return 'bg-green-100 border-green-500 text-green-700';
-    return 'bg-blue-100 border-blue-500 text-blue-700';
+    if (recommendation.startsWith("SELL NOW"))
+      return "bg-red-100 border-red-500 text-red-700";
+    if (recommendation.startsWith("SELL"))
+      return "bg-orange-100 border-orange-500 text-orange-700";
+    if (recommendation.startsWith("HOLD"))
+      return "bg-green-100 border-green-500 text-green-700";
+    return "bg-blue-100 border-blue-500 text-blue-700";
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-8">
+    <div className="min-h-full bg-slate-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Market Price Prediction</h1>
-          <p className="text-gray-600">AI-powered price forecasts to help you sell at the right time</p>
+          <h1 className="text-3xl font-semibold text-slate-900 mb-2">
+            Market Price Prediction
+          </h1>
+          <p className="text-slate-600">
+            AI-powered price forecasts to help you sell at the right time
+          </p>
         </div>
 
         {/* Controls */}
-        <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
           <div className="grid md:grid-cols-2 gap-6">
             {/* Crop Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Select Crop</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Crop
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 {crops.map((crop) => (
                   <button
@@ -103,8 +129,8 @@ export default function PricePrediction() {
                     onClick={() => setSelectedCrop(crop.value)}
                     className={`p-3 rounded-lg border-2 transition ${
                       selectedCrop === crop.value
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-green-300'
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-green-300"
                     }`}
                   >
                     <span className="text-2xl mr-2">{crop.icon}</span>
@@ -159,7 +185,9 @@ export default function PricePrediction() {
                     <DollarSign className="text-blue-500" size={32} />
                     <span className="text-sm text-gray-500">Current Price</span>
                   </div>
-                  <p className="text-3xl font-bold text-gray-800">₹{prediction.current_price}</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    ₹{prediction.current_price}
+                  </p>
                   <p className="text-sm text-gray-600 mt-2">per quintal</p>
                 </div>
 
@@ -168,13 +196,17 @@ export default function PricePrediction() {
                     <TrendingUp className="text-green-500" size={32} />
                     <span className="text-sm text-gray-500">Predicted Avg</span>
                   </div>
-                  <p className="text-3xl font-bold text-gray-800">₹{prediction.predicted_average}</p>
-                  <p className="text-sm text-gray-600 mt-2">next {predictionDays} days</p>
+                  <p className="text-3xl font-bold text-gray-800">
+                    ₹{prediction.predicted_average}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-2">
+                    next {predictionDays} days
+                  </p>
                 </div>
 
                 <div className="bg-white p-6 rounded-xl shadow-lg">
                   <div className="flex items-center justify-between mb-4">
-                    {prediction.trend === 'increasing' ? (
+                    {prediction.trend === "increasing" ? (
                       <TrendingUp className="text-green-500" size={32} />
                     ) : (
                       <TrendingDown className="text-red-500" size={32} />
@@ -183,13 +215,17 @@ export default function PricePrediction() {
                   </div>
                   <p
                     className={`text-3xl font-bold ${
-                      prediction.price_change_percentage > 0 ? 'text-green-600' : 'text-red-600'
+                      prediction.price_change_percentage > 0
+                        ? "text-green-600"
+                        : "text-red-600"
                     }`}
                   >
-                    {prediction.price_change_percentage > 0 ? '+' : ''}
+                    {prediction.price_change_percentage > 0 ? "+" : ""}
                     {prediction.price_change_percentage}%
                   </p>
-                  <p className="text-sm text-gray-600 mt-2 capitalize">{prediction.trend}</p>
+                  <p className="text-sm text-gray-600 mt-2 capitalize">
+                    {prediction.trend}
+                  </p>
                 </div>
 
                 <div className="bg-gradient-to-br from-green-500 to-blue-500 p-6 rounded-xl shadow-lg text-white">
@@ -197,19 +233,25 @@ export default function PricePrediction() {
                     <AlertCircle size={32} />
                     <span className="text-sm">Trend</span>
                   </div>
-                  <p className="text-2xl font-bold capitalize">{prediction.trend}</p>
+                  <p className="text-2xl font-bold capitalize">
+                    {prediction.trend}
+                  </p>
                   <p className="text-sm mt-2 opacity-90">Market Direction</p>
                 </div>
               </div>
 
               {/* Recommendation */}
               <div
-                className={`mb-8 p-6 rounded-xl border-l-4 ${getRecommendationColor(prediction.recommendation)}`}
+                className={`mb-8 p-6 rounded-xl border-l-4 ${getRecommendationColor(
+                  prediction.recommendation
+                )}`}
               >
                 <div className="flex items-start">
                   <AlertCircle className="mr-3 flex-shrink-0 mt-1" size={24} />
                   <div>
-                    <h3 className="font-semibold text-lg mb-1">Selling Recommendation</h3>
+                    <h3 className="font-semibold text-lg mb-1">
+                      Selling Recommendation
+                    </h3>
                     <p className="text-sm">{prediction.recommendation}</p>
                   </div>
                 </div>
@@ -217,12 +259,20 @@ export default function PricePrediction() {
 
               {/* Price Trend Chart */}
               <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Price Trend & Forecast</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                  Price Trend & Forecast
+                </h3>
                 <ResponsiveContainer width="100%" height={400}>
                   <LineChart data={priceChartData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
-                    <YAxis label={{ value: 'Price (₹/quintal)', angle: -90, position: 'insideLeft' }} />
+                    <YAxis
+                      label={{
+                        value: "Price (₹/quintal)",
+                        angle: -90,
+                        position: "insideLeft",
+                      }}
+                    />
                     <Tooltip />
                     <Legend />
                     <Line
@@ -249,17 +299,28 @@ export default function PricePrediction() {
               {/* Market Comparison */}
               {marketComparison && (
                 <div className="bg-white p-6 rounded-xl shadow-lg">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4">Market Comparison</h3>
+                  <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    Market Comparison
+                  </h3>
                   <p className="text-sm text-gray-600 mb-4">
-                    Best market:{' '}
-                    <span className="font-semibold text-green-600">{marketComparison.best_market}</span> - Price
-                    difference: ₹{marketComparison.price_difference}/quintal
+                    Best market:{" "}
+                    <span className="font-semibold text-green-600">
+                      {marketComparison.best_market}
+                    </span>{" "}
+                    - Price difference: ₹{marketComparison.price_difference}
+                    /quintal
                   </p>
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={marketComparison.comparison}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="mandi" />
-                      <YAxis label={{ value: 'Price (₹/quintal)', angle: -90, position: 'insideLeft' }} />
+                      <YAxis
+                        label={{
+                          value: "Price (₹/quintal)",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
                       <Tooltip />
                       <Bar dataKey="price" fill="#10b981" />
                     </BarChart>

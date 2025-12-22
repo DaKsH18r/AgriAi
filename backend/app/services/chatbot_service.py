@@ -1,6 +1,8 @@
 import os
+import re
 import google.generativeai as genai
 from dotenv import load_dotenv
+from app.services.agent_service import smart_agent
 
 load_dotenv()
 
@@ -11,7 +13,7 @@ class ChatbotService:
     
     def __init__(self):
         # Configure the model
-        self.model = genai.GenerativeModel('gemini-2.0-flash')
+        self.model = genai.GenerativeModel('gemini-flash-latest')
         
         # System prompt for agriculture context
         self.system_context = """
@@ -47,7 +49,10 @@ class ChatbotService:
             return response.text
             
         except Exception as e:
-            return f"Sorry, I encountered an error: {str(e)}. Please try again."
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                return "⚠️ The AI assistant is temporarily busy due to high demand. Please wait a minute and try again. This happens when many farmers are using the service at once."
+            return f"Sorry, I encountered an error: {error_msg}. Please try again."
     
     def get_response_with_history(self, user_message: str, chat_history: list) -> str:
         """Get response with conversation history for context"""
@@ -69,7 +74,10 @@ class ChatbotService:
             return response.text
             
         except Exception as e:
-            return f"Sorry, I encountered an error: {str(e)}. Please try again."
+            error_msg = str(e)
+            if "429" in error_msg or "quota" in error_msg.lower():
+                return "⚠️ The AI assistant is temporarily busy due to high demand. Please wait a minute and try again. This happens when many farmers are using the service at once."
+            return f"Sorry, I encountered an error: {error_msg}. Please try again."
         
 """ -->Configures Gemini AI with your API key
 -->Sets up agriculture-specific system prompt

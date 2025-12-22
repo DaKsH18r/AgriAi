@@ -37,6 +37,7 @@ class UserResponse(UserBase):
     """Schema for user response."""
     id: int
     is_active: bool
+    is_superuser: bool = False
     favorite_crops: Optional[List[str]] = None
     preferred_language: str = "en"
     notification_enabled: bool = True

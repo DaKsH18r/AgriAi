@@ -1,13 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Users,
-  CreditCard,
-  Flag,
   Activity,
   BarChart3,
   Ban,
   CheckCircle,
-  Edit,
   Trash2,
   Plus,
   TrendingUp,
@@ -23,7 +20,7 @@ import {
   type PlatformStats,
 } from "../services/adminAPI";
 
-type Tab = "users" | "plans" | "flags" | "logs" | "analytics";
+type Tab = "users" | "logs" | "analytics";
 
 interface User extends Record<string, unknown> {
   id: string;
@@ -33,22 +30,6 @@ interface User extends Record<string, unknown> {
   status: "active" | "inactive" | "banned";
   joined: string;
   lastActive: string;
-}
-
-interface Plan extends Record<string, unknown> {
-  id: string;
-  name: string;
-  price: string;
-  users: number;
-  features: string;
-}
-
-interface FeatureFlag {
-  id: string;
-  name: string;
-  key: string;
-  enabled: boolean;
-  description: string;
 }
 
 interface SystemLog extends Record<string, unknown> {
@@ -110,57 +91,7 @@ export const AdminPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-  }, [loadData]); // Sample data for features not yet implemented
-  const [plans] = useState([
-    { id: "1", name: "Free", price: "$0", users: 1250, features: "Basic" },
-    { id: "2", name: "Pro", price: "$29", users: 485, features: "Advanced" },
-    {
-      id: "3",
-      name: "Team",
-      price: "$99",
-      users: 125,
-      features: "All Features",
-    },
-  ]);
-
-  const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([
-    {
-      id: "1",
-      name: "AI Crop Advisor",
-      key: "ai_crop_advisor",
-      enabled: true,
-      description: "Enable AI-powered crop recommendations",
-    },
-    {
-      id: "2",
-      name: "Advanced Weather Alerts",
-      key: "advanced_weather",
-      enabled: true,
-      description: "Enable 15-day weather forecasts",
-    },
-    {
-      id: "3",
-      name: "Market Price Predictions",
-      key: "market_predictions",
-      enabled: false,
-      description: "Enable ML-based price predictions",
-    },
-    {
-      id: "4",
-      name: "Disease Detection Beta",
-      key: "disease_detection_beta",
-      enabled: false,
-      description: "Beta feature for image-based disease detection",
-    },
-  ]);
-
-  const toggleFeatureFlag = (id: string) => {
-    setFeatureFlags(
-      featureFlags.map((flag) =>
-        flag.id === id ? { ...flag, enabled: !flag.enabled } : flag
-      )
-    );
-  };
+  }, [loadData]);
 
   const handleDelete = async () => {
     try {
@@ -204,8 +135,6 @@ export const AdminPage: React.FC = () => {
 
   const tabs = [
     { id: "users" as Tab, label: "Users", icon: Users },
-    { id: "plans" as Tab, label: "Plans", icon: CreditCard },
-    { id: "flags" as Tab, label: "Feature Flags", icon: Flag },
     { id: "logs" as Tab, label: "System Logs", icon: Activity },
     { id: "analytics" as Tab, label: "Analytics", icon: BarChart3 },
   ];
@@ -282,33 +211,6 @@ export const AdminPage: React.FC = () => {
               <CheckCircle size={16} />
             </button>
           )}
-        </div>
-      ),
-    },
-  ];
-
-  // Plans Table Columns
-  const planColumns: Column<Plan>[] = [
-    { key: "name", header: "Plan Name", sortable: true },
-    { key: "price", header: "Price", sortable: true },
-    { key: "users", header: "Active Users", sortable: true },
-    { key: "features", header: "Feature Level" },
-    {
-      key: "id",
-      header: "Actions",
-      render: (plan: Plan) => (
-        <div className="flex gap-2">
-          <button className="p-2 hover:bg-blue-50 rounded-lg transition text-blue-600">
-            <Edit size={16} />
-          </button>
-          <button
-            onClick={() =>
-              setDeleteDialog({ open: true, type: "plan", id: plan.id })
-            }
-            className="p-2 hover:bg-red-50 rounded-lg transition text-red-600"
-          >
-            <Trash2 size={16} />
-          </button>
         </div>
       ),
     },
@@ -398,81 +300,6 @@ export const AdminPage: React.FC = () => {
                   rowsPerPage={5}
                 />
               )}
-            </div>
-          )}
-
-          {/* Plans Tab */}
-          {activeTab === "plans" && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Subscription Plans
-                </h2>
-                <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
-                  <Plus size={18} />
-                  Create Plan
-                </button>
-              </div>
-              <DataTable
-                columns={planColumns}
-                data={plans}
-                searchable={false}
-                rowsPerPage={10}
-              />
-            </div>
-          )}
-
-          {/* Feature Flags Tab */}
-          {activeTab === "flags" && (
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Feature Flags
-                </h2>
-                <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
-                  <Plus size={18} />
-                  New Flag
-                </button>
-              </div>
-              <div className="space-y-4">
-                {featureFlags.map((flag) => (
-                  <div
-                    key={flag.id}
-                    className="p-6 border border-gray-200 rounded-xl hover:shadow-lg transition"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-bold text-gray-900">
-                            {flag.name}
-                          </h3>
-                          <code className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-mono">
-                            {flag.key}
-                          </code>
-                        </div>
-                        <p className="text-gray-600">{flag.description}</p>
-                      </div>
-                      <button
-                        onClick={() => toggleFeatureFlag(flag.id)}
-                        className={`flex-shrink-0 px-6 py-2 rounded-xl font-semibold transition ${
-                          flag.enabled
-                            ? "bg-green-100 text-green-700 hover:bg-green-200"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                        }`}
-                      >
-                        {flag.enabled ? (
-                          <span className="flex items-center gap-2">
-                            <CheckCircle size={16} />
-                            Enabled
-                          </span>
-                        ) : (
-                          "Disabled"
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 

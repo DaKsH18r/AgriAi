@@ -6,12 +6,14 @@ import {
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminRoute } from "./components/AdminRoute";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 import { DashboardOverview } from "./components/DashboardOverview";
 import AgentDashboard from "./components/AgentDashboard";
 import WeatherDashboard from "./components/WeatherDashboard";
 import PricePrediction from "./components/PricePrediction";
 import YieldPrediction from "./components/YieldPrediction";
+import ChatBot from "./components/ChatBot";
 import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -25,7 +27,6 @@ import { ContactPage } from "./pages/ContactPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { ErrorPage } from "./pages/ErrorPage";
 import { ProfilePage } from "./pages/ProfilePage";
-import { FieldsPage } from "./pages/FieldsPage";
 import { AlertsPage } from "./pages/AlertsPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { OfflineDetector } from "./components/OfflineDetector";
@@ -113,17 +114,17 @@ function App() {
               }
             />
             <Route
-              path="/fields"
+              path="/dashboard/chatbot"
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
-                    <FieldsPage />
+                    <ChatBot />
                   </DashboardLayout>
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/alerts"
+              path="/dashboard/alerts"
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
@@ -133,7 +134,7 @@ function App() {
               }
             />
             <Route
-              path="/profile"
+              path="/dashboard/profile"
               element={
                 <ProtectedRoute>
                   <DashboardLayout>
@@ -143,9 +144,61 @@ function App() {
               }
             />
 
-            {/* Admin & Legacy Routes */}
+            {/* Legacy /app Routes */}
             <Route path="/app" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/app/admin" element={<AdminPage />} />
+            <Route
+              path="/app/agent"
+              element={<Navigate to="/dashboard/agent" replace />}
+            />
+            <Route
+              path="/app/weather"
+              element={<Navigate to="/dashboard/weather" replace />}
+            />
+            <Route
+              path="/app/prices"
+              element={<Navigate to="/dashboard/prices" replace />}
+            />
+            <Route
+              path="/app/yield"
+              element={<Navigate to="/dashboard/yield" replace />}
+            />
+            <Route
+              path="/app/chatbot"
+              element={<Navigate to="/dashboard/chatbot" replace />}
+            />
+            <Route
+              path="/app/alerts"
+              element={<Navigate to="/dashboard/alerts" replace />}
+            />
+            <Route
+              path="/app/profile"
+              element={<Navigate to="/dashboard/profile" replace />}
+            />
+            <Route
+              path="/dashboard/admin"
+              element={
+                <AdminRoute>
+                  <DashboardLayout>
+                    <AdminPage />
+                  </DashboardLayout>
+                </AdminRoute>
+              }
+            />
+            {/* Legacy redirect for /app/admin */}
+            <Route
+              path="/app/admin"
+              element={<Navigate to="/dashboard/admin" replace />}
+            />
+
+            {/* Backward compatibility for old routes */}
+            <Route
+              path="/alerts"
+              element={<Navigate to="/dashboard/alerts" replace />}
+            />
+            <Route
+              path="/profile"
+              element={<Navigate to="/dashboard/profile" replace />}
+            />
 
             {/* Error Routes */}
             <Route path="/error" element={<ErrorPage />} />

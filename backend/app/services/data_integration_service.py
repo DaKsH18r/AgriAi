@@ -23,12 +23,29 @@ class DataIntegrationService:
         self.resource_id = "9ef84268-d588-465a-a308-a864a43d0070"
         self.base_url = "https://api.data.gov.in/resource"
         
+        # Map our crop names to API commodity names (case-sensitive)
+        self.crop_to_commodity = {
+            "wheat": "Wheat",
+            "tomato": "Tomato",
+            "rice": "Rice",
+            "potato": "Potato",
+            "onion": "Onion",
+            "maize": "Maize",
+            "cotton": "Cotton",
+            "sugarcane": "Sugarcane"
+        }
+        
     def fetch_real_api_data(self, commodity: str = None, limit: int = 1000, offset: int = 0) -> Optional[Dict]:
         """
         Attempt to fetch real data from data.gov.in API
         """
         try:
-            logger.info(f"Attempting to fetch data from data.gov.in API (commodity={commodity}, limit={limit}, offset={offset})")
+            # Map crop name to API commodity name (case-sensitive)
+            api_commodity = None
+            if commodity:
+                api_commodity = self.crop_to_commodity.get(commodity.lower(), commodity)
+            
+            logger.info(f"Attempting to fetch data from data.gov.in API (crop={commodity}, api_commodity={api_commodity}, limit={limit}, offset={offset})")
             
             url = f"{self.base_url}/{self.resource_id}"
             
@@ -40,8 +57,8 @@ class DataIntegrationService:
             }
             
             # Add commodity filter if specified
-            if commodity:
-                params["filters[Commodity]"] = commodity
+            if api_commodity:
+                params["filters[commodity]"] = api_commodity
             
             response = requests.get(url, params=params, timeout=30)
             
@@ -77,13 +94,15 @@ class DataIntegrationService:
             logger.error(f"❌ Unexpected error fetching API data: {str(e)}")
             return None
     
-    def generate_synthetic_fallback_data(self, crop: str, days: int = 180) -> pd.DataFrame:
+    def generate_hybrid_historical_data(self, crop: str, days: int = 180, current_price: float = None) -> pd.DataFrame:
         """
-        Generate realistic synthetic data as fallback
+        Generate historical data based on current real price (if available)
+        Used to backfill historical data when API only provides today's data
+        ✅ DETERMINISTIC: Each date has the same price regardless of request
         """
-        logger.info(f"📊 Generating synthetic data for {crop} ({days} days)")
+        logger.info(f"📊 Generating hybrid historical data for {crop} ({days} days, current_price={current_price})")
         
-        # Realistic price ranges per crop
+        # Realistic price ranges per crop (per quintal)
         crop_config = {
             "wheat": {"base": 2100, "variance": 300, "seasonality": 1.2},
             "rice": {"base": 2800, "variance": 400, "seasonality": 1.15},
@@ -97,23 +116,38 @@ class DataIntegrationService:
         
         config = crop_config.get(crop.lower(), crop_config["wheat"])
         
+        # If we have real current price, adjust base to match reality
+        if current_price:
+            config["base"] = current_price
+            logger.info(f"✅ Using real current price ₹{current_price:.2f} as base for historical backfill")
+        
         dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
         
         # Generate realistic price patterns
+        # ✅ Key fix: Use date-specific seed so each date gets same price every time
         prices = []
-        for i, date in enumerate(dates):
-            # Base price with trend
-            base_price = config["base"] * (1 + i * 0.0001)
+        for date in dates:
+            # Set seed based on crop AND specific date
+            date_str = date.strftime("%Y-%m-%d")
+            seed_value = hash(f"{crop.lower()}:{date_str}") % (2**32)
+            np.random.seed(seed_value)
+            
+            # Base price with long-term trend
+            days_since_epoch = (date - datetime(2024, 1, 1)).days
+            base_price = config["base"] * (1 + days_since_epoch * 0.0001)
             
             # Seasonal variation
             day_of_year = date.timetuple().tm_yday
             seasonal = np.sin(2 * np.pi * day_of_year / 365) * config["variance"] * 0.3
             
-            # Random daily variation
+            # Random daily variation (deterministic per date)
             random_var = np.random.uniform(-config["variance"]/2, config["variance"]/2)
             
             price = base_price + seasonal + random_var
             prices.append(max(price, config["base"] * 0.5))
+        
+        # Reset random seed to avoid affecting other code
+        np.random.seed(None)
         
         df = pd.DataFrame({
             'date': dates,
@@ -151,19 +185,8 @@ class DataIntegrationService:
         
        # Try real API first (unless forced to use synthetic)
         if not force_synthetic:
-            # Map common crop names to API commodity names
-            commodity_mapping = {
-                "wheat": "Wheat",
-                "rice": "Rice",
-                "tomato": "Tomato",
-                "onion": "Onion",
-                "potato": "Potato",
-                "cotton": "Cotton",
-                "sugarcane": "Sugarcane",
-                "soyabean": "Soyabean"
-            }
-            
-            api_commodity = commodity_mapping.get(crop.lower(), crop.title())
+            # Use the commodity mapping from __init__
+            api_commodity = self.crop_to_commodity.get(crop.lower(), crop.title())
             
             api_data = self.fetch_real_api_data(commodity=api_commodity, limit=5000)
             
@@ -175,23 +198,46 @@ class DataIntegrationService:
             
             if processed_data is not None and not processed_data.empty:
                     self._store_in_database(processed_data)
-                    logger.info("✅ Using REAL API data")
+                    logger.info(f"✅ Got {len(processed_data)} records from REAL API")
                     
-                    # Sort by date (newest first)
-                    processed_data = processed_data.sort_values('date', ascending=False)
+                    # Check if we need historical backfill (API only provides today's data)
+                    unique_dates = processed_data['date'].dt.date.nunique()
                     
-                    # Take most recent N records (even if dates are old)
-                    # This handles historical data that might not be recent
-                    if len(processed_data) > days:
-                        processed_data = processed_data.head(days)
-                    
-                    logger.info(f"Returning {len(processed_data)} records from {processed_data['date'].min()} to {processed_data['date'].max()}")
-                    
-                    return processed_data
+                    if unique_dates < days and unique_dates <= 5:  # Need historical data
+                        logger.info(f"⚠️ API provided only {unique_dates} unique dates, need {days} days")
+                        
+                        # Get average current price from real data
+                        current_avg_price = processed_data['price'].mean()
+                        
+                        # Generate historical backfill based on real current price
+                        historical_data = self.generate_hybrid_historical_data(
+                            crop, 
+                            days=days, 
+                            current_price=current_avg_price
+                        )
+                        
+                        # Replace today's synthetic data with real API data
+                        today = datetime.now().date()
+                        historical_data = historical_data[historical_data['date'].dt.date < today]
+                        
+                        # Combine: historical synthetic + today's real
+                        combined_data = pd.concat([historical_data, processed_data], ignore_index=True)
+                        combined_data = combined_data.sort_values('date').tail(days)
+                        
+                        # ✅ Store hybrid data in database for consistency
+                        self._store_in_database(historical_data)
+                        
+                        logger.info(f"✅ Using HYBRID data: {len(historical_data)} historical + {len(processed_data)} real (today)")
+                        return combined_data
+                    else:
+                        # Have enough historical data from API
+                        processed_data = processed_data.sort_values('date', ascending=False).head(days)
+                        logger.info(f"✅ Using REAL API data: {len(processed_data)} records")
+                        return processed_data
         
-        # Fallback to synthetic data
-        logger.warning("⚠️ Falling back to synthetic data")
-        synthetic_data = self.generate_synthetic_fallback_data(crop, days)
+        # Fallback to pure synthetic (no real data available)
+        logger.warning("⚠️ No real API data available, using pure synthetic fallback")
+        synthetic_data = self.generate_hybrid_historical_data(crop, days)
         
         return synthetic_data
     
@@ -223,7 +269,21 @@ class DataIntegrationService:
             return df
     
     def _process_api_data(self, api_data: Dict, crop_filter: str = None) -> Optional[pd.DataFrame]:
-        """Process raw API data into our format"""
+        """Process raw API data into our format
+        
+        API format: {
+            "state": "Gujarat",
+            "district": "Surendranagar",
+            "market": "Dhragradhra APMC",
+            "commodity": "Tomato",
+            "variety": "Deshi",
+            "grade": "Local",
+            "arrival_date": "12/12/2025",
+            "min_price": 1850,
+            "max_price": 1850,
+            "modal_price": 1850
+        }
+        """
         try:
             if 'records' not in api_data or len(api_data['records']) == 0:
                 logger.warning("No records in API response")
@@ -234,34 +294,34 @@ class DataIntegrationService:
             
             logger.info(f"Processing {len(df)} raw records from API")
             
-            # Filter by crop if specified
-            if crop_filter and 'Commodity' in df.columns:
+            # Filter by crop if specified (API column is lowercase 'commodity')
+            if crop_filter and 'commodity' in df.columns:
                 original_count = len(df)
-                df = df[df['Commodity'].str.lower().str.contains(crop_filter.lower(), na=False)]
+                df = df[df['commodity'].str.lower().str.contains(crop_filter.lower(), na=False)]
                 logger.info(f"Filtered from {original_count} to {len(df)} records for {crop_filter}")
             
             if df.empty:
                 logger.warning(f"No records found for crop: {crop_filter}")
                 return None
             
-            # Convert date format (dd/MM/yyyy to datetime)
-            df['date'] = pd.to_datetime(df['Arrival_Date'], format='%d/%m/%Y', errors='coerce')
+            # Convert date format (dd/mm/yyyy to datetime) - API column is lowercase 'arrival_date'
+            df['date'] = pd.to_datetime(df['arrival_date'], format='%d/%m/%Y', errors='coerce')
             
-            # Convert prices to float (handle empty strings and invalid values)
-            df['modal_price'] = pd.to_numeric(df['Modal_Price'], errors='coerce')
-            df['min_price'] = pd.to_numeric(df['Min_Price'], errors='coerce')
-            df['max_price'] = pd.to_numeric(df['Max_Price'], errors='coerce')
+            # Convert prices to float (API columns are lowercase and already numeric)
+            df['modal_price_val'] = pd.to_numeric(df['modal_price'], errors='coerce')
+            df['min_price_val'] = pd.to_numeric(df['min_price'], errors='coerce')
+            df['max_price_val'] = pd.to_numeric(df['max_price'], errors='coerce')
             
             # Create clean dataframe
             processed = pd.DataFrame({
                 'date': df['date'],
-                'price': df['modal_price'],
-                'min_price': df['min_price'],
-                'max_price': df['max_price'],
-                'crop': df['Commodity'].str.lower(),
-                'mandi': df['Market'],
-                'state': df['State'],
-                'variety': df.get('Variety', 'Standard')
+                'price': df['modal_price_val'],
+                'min_price': df['min_price_val'],
+                'max_price': df['max_price_val'],
+                'crop': df['commodity'].str.lower(),
+                'mandi': df['market'],
+                'state': df['state'],
+                'variety': df.get('variety', pd.Series(['Standard'] * len(df)))
             })
             
             # Remove rows with invalid data

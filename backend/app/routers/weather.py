@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query, Request
 from app.services.weather_service import WeatherService
+from app.services.weather_impact_service import weather_impact_service
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.core.logging_config import logger
@@ -114,3 +115,23 @@ async def get_weather_alerts(request: Request, city: str = Query(..., descriptio
         "alerts": alerts,
         "current_conditions": weather_data
     }
+
+
+@router.get("/impact")
+@limiter.limit("100/hour")
+async def get_weather_impact(
+    request: Request,
+    crop: str = Query(..., description="Crop name (wheat, rice, etc.)"),
+    city: str = Query(..., description="City name"),
+    days: int = Query(7, description="Forecast days", ge=1, le=16)
+):
+    """
+    Get weather impact analysis for a specific crop
+    Returns impact assessment and farming recommendations
+    """
+    try:
+        impact_data = await weather_impact_service.analyze_weather_impact(crop, city, days)
+        return impact_data
+    except Exception as e:
+        logger.error(f"Weather impact analysis failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Weather impact analysis failed: {str(e)}")
