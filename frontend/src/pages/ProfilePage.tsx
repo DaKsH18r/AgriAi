@@ -30,7 +30,8 @@ export const ProfilePage: React.FC = () => {
 
   const [cropInput, setCropInput] = useState("");
 
-  const API_BASE_URL = "http://127.0.0.1:8000/api";
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
   const languages = [
     { code: "en", name: "English" },
@@ -47,11 +48,11 @@ export const ProfilePage: React.FC = () => {
     setLoading(true);
 
     try {
-      await axios.put(`${API_BASE_URL}/auth/me`, formData, {
+      await axios.put(`${API_BASE_URL}/v1/auth/me`, formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSuccess("Profile updated successfully!");
-    } catch (err) {
+    } catch {
       setError("Failed to update profile");
     } finally {
       setLoading(false);
@@ -79,16 +80,16 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 p-4 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="flex items-center gap-4 mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
-              <User className="w-8 h-8 text-white" />
+        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+          <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-linear-to-br from-green-50 to-blue-50 rounded-full flex items-center justify-center shrink-0">
+              <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">User Profile</h1>
-              <p className="text-gray-600">{user?.email}</p>
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-800 truncate">User Profile</h1>
+              <p className="text-gray-600 text-sm sm:text-base truncate">{user?.email}</p>
             </div>
           </div>
 
@@ -107,7 +108,7 @@ export const ProfilePage: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Full Name */}
+            {" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name
@@ -124,9 +125,7 @@ export const ProfilePage: React.FC = () => {
                   placeholder="Your full name"
                 />
               </div>
-            </div>
-
-            {/* Phone */}
+            </div>{" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Phone
@@ -143,9 +142,7 @@ export const ProfilePage: React.FC = () => {
                   placeholder="+91 1234567890"
                 />
               </div>
-            </div>
-
-            {/* Location */}
+            </div>{" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Location
@@ -162,9 +159,7 @@ export const ProfilePage: React.FC = () => {
                   placeholder="City, State"
                 />
               </div>
-            </div>
-
-            {/* Favorite Crops */}
+            </div>{" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Sprout className="inline w-5 h-5 mr-2" />
@@ -179,12 +174,13 @@ export const ProfilePage: React.FC = () => {
                     e.key === "Enter" && (e.preventDefault(), addCrop())
                   }
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  placeholder="Add crop (e.g., Rice, Wheat)"
+                  placeholder="Rice, Wheat, Cotton"
                 />
                 <button
                   type="button"
                   onClick={addCrop}
-                  className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  aria-label="Add crop to favorite crops"
+                  className="px-6 py-2 bg-emerald-900 text-white rounded-lg hover:bg-emerald-800"
                 >
                   Add
                 </button>
@@ -199,6 +195,7 @@ export const ProfilePage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeCrop(crop)}
+                      aria-label={`Remove ${crop} from favorite crops`}
                       className="text-green-700 hover:text-green-900"
                     >
                       ×
@@ -206,9 +203,7 @@ export const ProfilePage: React.FC = () => {
                   </span>
                 ))}
               </div>
-            </div>
-
-            {/* Preferred Language */}
+            </div>{" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 <Globe className="inline w-5 h-5 mr-2" />
@@ -222,6 +217,7 @@ export const ProfilePage: React.FC = () => {
                     preferred_language: e.target.value,
                   })
                 }
+                aria-label="Select preferred language"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
               >
                 {languages.map((lang) => (
@@ -230,9 +226,7 @@ export const ProfilePage: React.FC = () => {
                   </option>
                 ))}
               </select>
-            </div>
-
-            {/* Notifications */}
+            </div>{" "}
             <div className="flex items-center gap-3">
               <Bell className="w-5 h-5 text-gray-400" />
               <label className="flex items-center cursor-pointer">
@@ -245,17 +239,17 @@ export const ProfilePage: React.FC = () => {
                       notification_enabled: e.target.checked,
                     })
                   }
+                  aria-label="Toggle notifications"
                   className="w-5 h-5 text-green-500 border-gray-300 rounded focus:ring-green-500"
                 />
                 <span className="ml-2 text-gray-700">Enable notifications</span>
               </label>
-            </div>
-
-            {/* Submit Button */}
+            </div>{" "}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              aria-label="Save all profile changes"
+              className="w-full bg-emerald-900 hover:bg-emerald-800 text-white py-3 rounded-lg font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <Save className="w-5 h-5" />
               {loading ? "Saving..." : "Save Profile"}

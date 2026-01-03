@@ -5,7 +5,6 @@ import pandas as pd
 from typing import Dict
 
 class YieldService:
-    
     # Crop data with typical yield ranges (quintals per hectare)
     CROP_DATA = {
         "wheat": {"min_yield": 25, "max_yield": 50, "optimal_temp": 22, "optimal_rainfall": 600},
@@ -26,10 +25,6 @@ class YieldService:
       
     
     def _train_model(self):
-        """
-        Train a Random Forest model on synthetic data
-        In production, this would be trained on real agricultural data
-        """
         # Generate synthetic training data
         np.random.seed(42)
         n_samples = 1000
@@ -95,9 +90,6 @@ class YieldService:
     
     def predict_yield(self, crop: str, area: float, rainfall: float, temperature: float,
                      soil_ph: float, nitrogen: float, phosphorus: float, potassium: float) -> Dict:
-        """
-        Predict crop yield based on input parameters
-        """
         try:
             if crop.lower() not in self.CROP_DATA:
                 return {"error": f"Crop '{crop}' not supported. Supported crops: {', '.join(self.CROP_DATA.keys())}"}
@@ -152,7 +144,6 @@ class YieldService:
     
     def _check_optimal_conditions(self, crop: str, temperature: float, 
                                   rainfall: float, soil_ph: float) -> Dict:
-        """Check if conditions are optimal for the crop"""
         crop_info = self.CROP_DATA[crop]
         
         temp_diff = abs(temperature - crop_info["optimal_temp"])
@@ -178,7 +169,6 @@ class YieldService:
     def _generate_recommendations(self, crop: str, temperature: float, rainfall: float,
                                  soil_ph: float, nitrogen: float, phosphorus: float, 
                                  potassium: float) -> list:
-        """Generate farming recommendations based on conditions"""
         recommendations = []
         crop_info = self.CROP_DATA[crop]
         
@@ -258,5 +248,4 @@ class YieldService:
     
     @staticmethod
     def get_supported_crops():
-        """Get list of supported crops"""
         return list(YieldService.CROP_DATA.keys())

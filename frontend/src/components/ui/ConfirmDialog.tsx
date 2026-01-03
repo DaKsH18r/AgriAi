@@ -32,7 +32,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <div className="p-6">
           <div className="flex items-start gap-4 mb-6">
             {destructive && (
-              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center shrink-0">
                 <AlertTriangle className="text-red-600" size={24} />
               </div>
             )}
@@ -60,11 +60,10 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             <button
               onClick={onConfirm}
               disabled={loading}
-              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition disabled:opacity-50 ${
-                destructive
-                  ? "bg-red-600 text-white hover:bg-red-700"
-                  : "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg"
-              }`}
+              className={`flex-1 px-6 py-3 rounded-xl font-semibold transition disabled:opacity-50 ${destructive
+                ? "bg-red-600 text-white hover:bg-red-700"
+                : "bg-emerald-900 hover:bg-emerald-800 text-white hover:shadow-lg"
+                }`}
             >
               {loading ? (
                 <div className="flex items-center justify-center gap-2">

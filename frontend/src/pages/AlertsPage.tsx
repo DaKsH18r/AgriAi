@@ -1,6 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Bell, TrendingUp, Plus, Trash2, X, Loader } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Bell,
+  TrendingUp,
+  Plus,
+  Trash2,
+  X,
+  Loader,
+  CheckCircle,
+} from "lucide-react";
 import axios from "axios";
+import { logger } from "../utils/logger";
 
 interface PriceAlert {
   id: string;
@@ -19,6 +28,7 @@ export const AlertsPage: React.FC = () => {
   const [alerts, setAlerts] = useState<PriceAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
     crop: "wheat",
     city: "Delhi",
@@ -28,29 +38,41 @@ export const AlertsPage: React.FC = () => {
     notification_method: "EMAIL",
   });
 
-  useEffect(() => {
-    fetchAlerts();
-  }, []);
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await axios.get("http://localhost:8000/api/alerts", {
-        headers: { Authorization: `Bearer ${token}` },
+      const response = await axios.get(`${API_BASE_URL}/alerts`, {
+        headers: { Authorization: `Bearer ${token} ` },
       });
       setAlerts(response.data);
     } catch (error) {
-      console.error("Error fetching alerts:", error);
+      logger.error("Error fetching alerts", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE_URL]);
+
+  useEffect(() => {
+    fetchAlerts();
+  }, [fetchAlerts]);
 
   const createAlert = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const payload: any = {
+
+      interface AlertPayload {
+        crop: string;
+        city: string;
+        alert_type: string;
+        threshold_price?: number;
+        threshold_percentage?: number;
+        notification_method: string;
+      }
+      const payload: AlertPayload = {
         crop: formData.crop,
         city: formData.city,
         alert_type: formData.alert_type,
@@ -65,13 +87,12 @@ export const AlertsPage: React.FC = () => {
         payload.threshold_price = parseFloat(formData.threshold_price);
       }
 
-      await axios.post("http://localhost:8000/api/alerts", payload, {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.post(`${API_BASE_URL}/alerts`, payload, {
+        headers: { Authorization: `Bearer ${token} ` },
       });
 
-      alert(
-        "✅ Price alert created! You'll receive in-app and email notifications when conditions are met."
-      );
+      setSuccess("Price alert created successfully!");
+      setTimeout(() => setSuccess(""), 3000);
 
       setShowCreateModal(false);
       setFormData({
@@ -84,8 +105,9 @@ export const AlertsPage: React.FC = () => {
       });
       fetchAlerts();
     } catch (error) {
-      console.error("Error creating alert:", error);
-      alert("Failed to create alert");
+      logger.error("Error creating alert", error);
+      setSuccess("Failed to create alert");
+      setTimeout(() => setSuccess(""), 3000);
     }
   };
 
@@ -94,12 +116,12 @@ export const AlertsPage: React.FC = () => {
 
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:8000/api/alerts/${id}`, {
+      await axios.delete(`${API_BASE_URL}/alerts/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       fetchAlerts();
     } catch (error) {
-      console.error("Error deleting alert:", error);
+      logger.error("Error deleting alert", error);
     }
   };
 
@@ -107,13 +129,13 @@ export const AlertsPage: React.FC = () => {
     try {
       const token = localStorage.getItem("token");
       await axios.patch(
-        `http://localhost:8000/api/alerts/${alert.id}`,
+        `${API_BASE_URL}/alerts/${alert.id}`,
         { is_active: !alert.is_active },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchAlerts();
     } catch (error) {
-      console.error("Error toggling alert:", error);
+      logger.error("Error toggling alert", error);
     }
   };
 
@@ -126,32 +148,35 @@ export const AlertsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        {success && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2 text-green-700 animate-fadeIn">
+            <CheckCircle className="w-5 h-5" />
+            <span>{success}</span>
+          </div>
+        )}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">
               Price Alerts
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               {alerts.length > 0
-                ? `Managing ${alerts.length} alert${
-                    alerts.length > 1 ? "s" : ""
-                  }`
+                ? `Managing ${alerts.length} alert${alerts.length > 1 ? "s" : ""
+                }`
                 : "Create alerts to get notified in the website when prices change"}
             </p>
           </div>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition shadow-lg"
+            aria-label="Create new price alert"
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-emerald-900 text-white rounded-xl font-semibold hover:bg-emerald-800 transition shadow-lg w-full sm:w-auto"
           >
             <Plus size={20} />
             Create Alert
           </button>
-        </div>
-
-        {/* Alerts List */}
+        </div>{" "}
         {alerts.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
             <Bell className="mx-auto text-gray-400 mb-4" size={64} />
@@ -167,7 +192,8 @@ export const AlertsPage: React.FC = () => {
             </p>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition"
+              aria-label="Create your first price alert"
+              className="px-6 py-3 bg-emerald-900 text-white rounded-xl font-semibold hover:bg-emerald-800 transition"
             >
               Create Your First Alert
             </button>
@@ -177,15 +203,11 @@ export const AlertsPage: React.FC = () => {
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${
-                  alert.is_active ? "border-l-green-500" : "border-l-gray-300"
-                }`}
+                className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${alert.is_active ? "border-l-green-500" : "border-l-gray-300"
+                  }`}
               >
                 <div className="flex items-start gap-4">
-                  <TrendingUp
-                    className="text-green-600 flex-shrink-0"
-                    size={24}
-                  />
+                  <TrendingUp className="text-green-600 shrink-0" size={24} />
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4 mb-2">
@@ -202,19 +224,22 @@ export const AlertsPage: React.FC = () => {
                             `Alert when price changes by ${alert.threshold_percentage}%`}
                         </p>
                       </div>
-                      <div className="flex gap-2 flex-shrink-0">
+                      <div className="flex gap-2 shrink-0">
                         <button
                           onClick={() => toggleActive(alert)}
-                          className={`px-4 py-2 rounded-lg font-medium transition ${
-                            alert.is_active
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-600"
-                          }`}
+                          aria-label={
+                            alert.is_active ? "Pause alert" : "Activate alert"
+                          }
+                          className={`px-4 py-2 rounded-lg font-medium transition ${alert.is_active
+                            ? "bg-green-100 text-green-700"
+                            : "bg-gray-100 text-gray-600"
+                            }`}
                         >
                           {alert.is_active ? "Active" : "Paused"}
                         </button>
                         <button
                           onClick={() => deleteAlert(alert.id)}
+                          aria-label="Delete alert"
                           className="p-2 hover:bg-red-50 rounded-lg transition text-red-600"
                           title="Delete"
                         >
@@ -245,9 +270,7 @@ export const AlertsPage: React.FC = () => {
               </div>
             ))}
           </div>
-        )}
-
-        {/* Create Modal */}
+        )}{" "}
         {showCreateModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
@@ -257,6 +280,7 @@ export const AlertsPage: React.FC = () => {
                 </h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
+                  aria-label="Close create alert form"
                   className="p-2 hover:bg-gray-100 rounded-lg transition"
                 >
                   <X size={24} />
@@ -297,7 +321,7 @@ export const AlertsPage: React.FC = () => {
                       setFormData({ ...formData, city: e.target.value })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    placeholder="e.g., Delhi"
+                    placeholder="Delhi"
                     required
                   />
                 </div>
@@ -311,7 +335,7 @@ export const AlertsPage: React.FC = () => {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        alert_type: e.target.value as any,
+                        alert_type: e.target.value as string,
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -339,7 +363,7 @@ export const AlertsPage: React.FC = () => {
                         })
                       }
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="e.g., 5"
+                      placeholder="5"
                       required
                     />
                   </div>
@@ -359,7 +383,7 @@ export const AlertsPage: React.FC = () => {
                         })
                       }
                       className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="e.g., 2500"
+                      placeholder="2500"
                       required
                     />
                   </div>
@@ -393,13 +417,15 @@ export const AlertsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowCreateModal(false)}
+                    aria-label="Cancel alert creation"
                     className="flex-1 px-4 py-3 border border-gray-300 rounded-xl font-semibold hover:bg-gray-50 transition"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition"
+                    aria-label="Submit new alert"
+                    className="flex-1 px-4 py-3 bg-emerald-900 text-white rounded-xl font-semibold hover:bg-emerald-800 transition"
                   >
                     Create Alert
                   </button>

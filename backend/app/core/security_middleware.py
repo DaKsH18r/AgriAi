@@ -1,6 +1,3 @@
-"""
-Security middleware for enhanced protection
-"""
 
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -13,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Add security headers to all responses"""
     
     async def dispatch(self, request: Request, call_next: Callable):
         response = await call_next(request)
@@ -31,7 +27,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class InputValidationMiddleware(BaseHTTPMiddleware):
-    """Validate and sanitize inputs to prevent injection attacks"""
     
     # Dangerous patterns to block
     SQL_INJECTION_PATTERNS = [
@@ -98,7 +93,6 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         return await call_next(request)
     
     def _is_malicious(self, text: str) -> bool:
-        """Check if text contains malicious patterns"""
         text_upper = text.upper()
         
         # Check SQL injection patterns
@@ -115,7 +109,6 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
 
 
 class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
-    """Limit request size to prevent DoS attacks"""
     
     MAX_REQUEST_SIZE = 10 * 1024 * 1024  # 10MB
     

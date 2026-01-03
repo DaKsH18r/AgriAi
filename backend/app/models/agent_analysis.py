@@ -1,9 +1,6 @@
-"""
-Model for storing AI agent analysis history
-"""
 
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, Text
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import Base
 
 
@@ -34,10 +31,9 @@ class AgentAnalysis(Base):
     
     # Metadata
     analysis_duration = Column(Float)  # seconds
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
     
     def to_dict(self):
-        """Convert to dictionary for API response"""
         return {
             "id": self.id,
             "crop": self.crop,

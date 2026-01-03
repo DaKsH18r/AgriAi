@@ -94,27 +94,22 @@ export const FeaturesPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Simple Nav */}
-      <nav className="fixed top-0 w-full glass border-b border-gray-200/50 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">🌾</span>
-            </div>
-            <span className="text-xl font-bold gradient-text">AgriAI</span>
-          </Link>
-          <Link
-            to="/register"
-            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition"
-          >
-            Get Started
-          </Link>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="pt-32 pb-12 px-4 bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen bg-white">      <nav className="fixed top-0 w-full glass border-b border-gray-200/50 z-50">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="w-10 h-10 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-xl">🌾</span>
+          </div>
+          <span className="text-xl font-bold gradient-text">AgriAI</span>
+        </Link>
+        <Link
+          to="/register"
+          className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition"
+        >
+          Get Started
+        </Link>
+      </div>
+    </nav>      <section className="pt-32 pb-12 px-4 bg-linear-to-br from-green-50 to-blue-50">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             Features Built for
@@ -125,21 +120,17 @@ export const FeaturesPage: React.FC = () => {
             better crops
           </p>
         </div>
-      </section>
-
-      {/* Features Detail */}
-      <section className="py-20 px-4">
+      </section>      <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto space-y-32">
           {features.map((feature, idx) => (
             <div
               key={idx}
-              className={`flex flex-col ${
-                idx % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
-              } gap-12 items-center`}
+              className={`flex flex-col ${idx % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
+                } gap-12 items-center`}
             >
               <div className="flex-1">
                 <div
-                  className={`w-16 h-16 bg-gradient-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 shadow-xl`}
+                  className={`w-16 h-16 bg-linear-to-br ${feature.color} rounded-2xl flex items-center justify-center mb-6 shadow-xl`}
                 >
                   <feature.icon className="text-white" size={32} />
                 </div>
@@ -165,7 +156,7 @@ export const FeaturesPage: React.FC = () => {
                       {feature.benefits.map((benefit, i) => (
                         <li key={i} className="flex items-start gap-2">
                           <ArrowRight
-                            className="text-green-600 mt-1 flex-shrink-0"
+                            className="text-green-600 mt-1 shrink-0"
                             size={18}
                           />
                           <span className="text-gray-700">{benefit}</span>
@@ -177,7 +168,7 @@ export const FeaturesPage: React.FC = () => {
               </div>
               <div className="flex-1">
                 <div
-                  className={`w-full h-96 bg-gradient-to-br ${feature.color} rounded-2xl shadow-2xl flex items-center justify-center`}
+                  className={`w-full h-96 bg-linear-to-br ${feature.color} rounded-2xl shadow-2xl flex items-center justify-center`}
                 >
                   <feature.icon className="text-white opacity-20" size={120} />
                 </div>
@@ -185,10 +176,7 @@ export const FeaturesPage: React.FC = () => {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-r from-green-500 to-emerald-600">
+      </section>      <section className="py-20 px-4 bg-linear-to-r from-green-500 to-emerald-600">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-4xl font-bold text-white mb-6">
             Ready to Experience These Features?

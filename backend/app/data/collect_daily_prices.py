@@ -35,7 +35,7 @@ def collect_daily_data():
     Over time, this builds up real historical data for accurate predictions
     """
     logger.info("="*60)
-    logger.info(f"🌾 DAILY PRICE COLLECTION - {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    logger.info(f" DAILY PRICE COLLECTION - {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     logger.info("="*60)
     
     service = DataIntegrationService()
@@ -47,7 +47,7 @@ def collect_daily_data():
     
     for crop in CROPS_TO_COLLECT:
         try:
-            logger.info(f"\n📊 Collecting {crop.upper()}...")
+            logger.info(f"\n[DATA] Collecting {crop.upper()}...")
             
             # Fetch real API data (limit=5000 to get all today's markets)
             api_commodity = service.crop_to_commodity.get(crop.lower(), crop.title())
@@ -64,28 +64,28 @@ def collect_daily_data():
                     states_count = processed_data['state'].nunique()
                     markets_count = processed_data['mandi'].nunique()
                     
-                    logger.info(f"✅ {crop.upper()}: {records_count} records | {states_count} states | {markets_count} markets")
+                    logger.info(f"[OK] {crop.upper()}: {records_count} records | {states_count} states | {markets_count} markets")
                     
                     results['success'].append(crop)
                     results['total_records'] += records_count
                 else:
-                    logger.warning(f"⚠️ {crop.upper()}: No valid data after processing")
+                    logger.warning(f"[WARNING] {crop.upper()}: No valid data after processing")
                     results['failed'].append(crop)
             else:
-                logger.warning(f"⚠️ {crop.upper()}: No data from API")
+                logger.warning(f"[WARNING] {crop.upper()}: No data from API")
                 results['failed'].append(crop)
                 
         except Exception as e:
-            logger.error(f"❌ {crop.upper()}: Error - {str(e)}")
+            logger.error(f"[ERROR] {crop.upper()}: Error - {str(e)}")
             results['failed'].append(crop)
     
     # Summary
     logger.info("\n" + "="*60)
-    logger.info("📈 COLLECTION SUMMARY")
+    logger.info("[UP] COLLECTION SUMMARY")
     logger.info("="*60)
-    logger.info(f"✅ Success: {len(results['success'])} crops")
-    logger.info(f"❌ Failed: {len(results['failed'])} crops")
-    logger.info(f"📊 Total Records: {results['total_records']}")
+    logger.info(f"[OK] Success: {len(results['success'])} crops")
+    logger.info(f"[ERROR] Failed: {len(results['failed'])} crops")
+    logger.info(f"[DATA] Total Records: {results['total_records']}")
     
     if results['success']:
         logger.info(f"Successful: {', '.join(results['success'])}")
@@ -102,17 +102,17 @@ if __name__ == "__main__":
         
         # Exit with appropriate code
         if len(results['failed']) == 0:
-            logger.info("✅ All crops collected successfully")
+            logger.info("[OK] All crops collected successfully")
             sys.exit(0)
         elif len(results['success']) > 0:
-            logger.warning("⚠️ Some crops failed but collection partially successful")
+            logger.warning("[WARNING] Some crops failed but collection partially successful")
             sys.exit(0)  # Don't fail if we got some data
         else:
-            logger.error("❌ All crops failed to collect")
+            logger.error("[ERROR] All crops failed to collect")
             sys.exit(1)
             
     except Exception as e:
-        logger.error(f"❌ Critical error: {str(e)}")
+        logger.error(f"[ERROR] Critical error: {str(e)}")
         import traceback
         logger.error(traceback.format_exc())
         sys.exit(1)

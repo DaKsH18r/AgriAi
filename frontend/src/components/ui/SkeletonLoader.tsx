@@ -50,29 +50,18 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
 
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-6 p-6">
-      {/* Header Skeleton */}
-      <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="space-y-6 p-6">      <div className="bg-white rounded-lg shadow-md p-6">
         <SkeletonLoader className="h-8 w-64 mb-2" />
         <SkeletonLoader className="h-4 w-96" />
-      </div>
-
-      {/* Stats Skeleton */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      </div>      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <CardSkeleton />
         <CardSkeleton />
         <CardSkeleton />
         <CardSkeleton />
-      </div>
-
-      {/* Main Content Skeleton */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      </div>      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartSkeleton />
         <ChartSkeleton />
-      </div>
-
-      {/* Table Skeleton */}
-      <TableSkeleton />
+      </div>      <TableSkeleton />
     </div>
   );
 }

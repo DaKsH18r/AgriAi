@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Droplets,
   Thermometer,
@@ -15,6 +15,7 @@ import {
 } from "../services/api";
 import { ErrorDisplay } from "./ErrorDisplay";
 import { LoadingSkeleton } from "./LoadingSkeleton";
+import { logger } from "../utils/logger";
 
 interface MetricCardProps {
   title: string;
@@ -80,16 +81,31 @@ export function DashboardOverview() {
   const userName = localStorage.getItem("userName") || "Farmer";
   const userLocation = localStorage.getItem("userLocation") || "Delhi";
 
-  const [currentWeather, setCurrentWeather] = useState<any>(null);
+  interface WeatherData {
+    temperature: number;
+    humidity: number;
+    feels_like: number;
+    wind_speed: number;
+    city: string;
+    description: string;
+  }
+  const [currentWeather, setCurrentWeather] = useState<WeatherData | null>(
+    null
+  );
   const [unreadCount, setUnreadCount] = useState(0);
-  const [recentAnalyses, setRecentAnalyses] = useState<any[]>([]);
+  interface AnalysisData {
+    id: string;
+    crop: string;
+    decision: {
+      action: string;
+      confidence: number;
+    };
+    timestamp: string;
+  }
+  const [recentAnalyses, setRecentAnalyses] = useState<AnalysisData[]>([]);
   const [wheatPrice, setWheatPrice] = useState<number | null>(null);
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, [userLocation]);
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -114,9 +130,19 @@ export function DashboardOverview() {
       // Fetch recent agent analyses
       try {
         const history = await agentAPI.getHistory(3);
-        setRecentAnalyses(history.analyses);
+        // Map to AnalysisData type if needed
+        setRecentAnalyses(
+          history.analyses.map(
+            (a): AnalysisData => ({
+              id: String(a.id),
+              crop: a.crop,
+              decision: a.decision,
+              timestamp: a.timestamp,
+            })
+          )
+        );
       } catch (err) {
-        console.warn("Failed to fetch analyses:", err);
+        logger.warn("Failed to fetch analyses", { error: err });
         setRecentAnalyses([]);
       }
 
@@ -125,18 +151,22 @@ export function DashboardOverview() {
         const priceData = await priceAPI.getPrediction("wheat", 7);
         setWheatPrice(priceData.current_price);
       } catch (err) {
-        console.warn("Failed to fetch price data:", err);
+        logger.warn("Failed to fetch price data", { error: err });
         setWheatPrice(null);
       }
     } catch (error) {
-      console.error("Failed to fetch dashboard data:", error);
+      logger.error("Failed to fetch dashboard data", { error });
       setError(
         "Unable to load dashboard data. Please try refreshing the page."
       );
     } finally {
       setLoading(false);
     }
-  };
+  }, [userLocation]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [userLocation, fetchDashboardData]);
 
   const metrics = [
     {
@@ -186,7 +216,7 @@ export function DashboardOverview() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl p-6 h-48 animate-pulse"></div>
+        <div className="bg-linear-to-br from-emerald-900 to-emerald-800 rounded-2xl p-6 h-48 animate-pulse"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <LoadingSkeleton key={i} variant="card" />
@@ -216,8 +246,8 @@ export function DashboardOverview() {
 
   return (
     <div className="space-y-6">
-      {/* Greeting Banner */}
-      <div className="bg-gradient-to-br from-emerald-900 to-emerald-800 rounded-2xl p-6 text-white">
+      {" "}
+      <div className="bg-linear-to-br from-emerald-900 to-emerald-800 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-semibold mb-1">
@@ -257,18 +287,14 @@ export function DashboardOverview() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Key Metrics Grid */}
+      </div>{" "}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric, index) => (
           <MetricCard key={index} {...metric} />
         ))}
-      </div>
-
-      {/* Content Split: Chart + Activity Log */}
+      </div>{" "}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Crop Health Chart Placeholder */}
+        {" "}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="text-base font-semibold text-slate-900 mb-4">
             Crop Health Index
@@ -284,9 +310,7 @@ export function DashboardOverview() {
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Right: Recent AI Analyses */}
+        </div>{" "}
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="text-base font-semibold text-slate-900 mb-4">
             Recent AI Analyses

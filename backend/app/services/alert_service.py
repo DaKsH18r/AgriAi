@@ -1,6 +1,5 @@
-"""Price Alert Monitoring Service"""
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
@@ -13,14 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 class AlertService:
-    """Service for checking and triggering price alerts"""
-    
     def __init__(self):
         self.price_service = PriceService()
         self.email_service = EmailService()
     
     async def check_all_alerts(self) -> dict:
-        """Check all active alerts and trigger notifications"""
         db = SessionLocal()
         triggered_count = 0
         checked_count = 0
@@ -38,7 +34,7 @@ class AlertService:
                 
                 # Skip if triggered recently (within 1 hour)
                 if alert.last_triggered_at and \
-                   datetime.utcnow() - alert.last_triggered_at < timedelta(hours=1):
+                   datetime.now(timezone.utc) - alert.last_triggered_at < timedelta(hours=1):
                     continue
                 
                 # Get current price
@@ -65,14 +61,13 @@ class AlertService:
             return {
                 "checked": checked_count,
                 "triggered": triggered_count,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
             
         finally:
             db.close()
     
     async def _get_current_price(self, crop: str, city: str) -> float | None:
-        """Get current price for crop in city"""
         try:
             # Get latest price from database
             prices_df = self.price_service.data_integration_service.get_price_data(crop, days=1)
@@ -89,15 +84,13 @@ class AlertService:
             return None
     
     def _should_trigger_alert(self, alert: PriceAlert, current_price: float) -> tuple[bool, str]:
-        """Check if alert conditions are met"""
-        
         if alert.alert_type == 'ABOVE':
             if current_price > alert.threshold_price:
-                return True, f"Price ₹{current_price:.2f} is above your threshold of ₹{alert.threshold_price:.2f}"
+                return True, f"Price Rs.{current_price:.2f} is above your threshold of Rs.{alert.threshold_price:.2f}"
         
         elif alert.alert_type == 'BELOW':
             if current_price < alert.threshold_price:
-                return True, f"Price ₹{current_price:.2f} is below your threshold of ₹{alert.threshold_price:.2f}"
+                return True, f"Price Rs.{current_price:.2f} is below your threshold of Rs.{alert.threshold_price:.2f}"
         
         elif alert.alert_type == 'CHANGE':
             # Get price from 24 hours ago
@@ -112,7 +105,7 @@ class AlertService:
                     
                     if abs(change_percent) >= alert.threshold_percentage:
                         direction = "increased" if change_percent > 0 else "decreased"
-                        return True, f"Price {direction} by {abs(change_percent):.1f}% (₹{current_price:.2f})"
+                        return True, f"Price {direction} by {abs(change_percent):.1f}% (Rs.{current_price:.2f})"
             
             except Exception as e:
                 logger.error(f"Error calculating price change: {e}")
@@ -120,7 +113,6 @@ class AlertService:
         return False, ""
     
     async def _trigger_alert(self, alert: PriceAlert, current_price: float, message: str, db: Session):
-        """Send notification for triggered alert"""
         try:
             # Send email notification
             if alert.notification_method in ['EMAIL', 'BOTH']:
@@ -128,16 +120,16 @@ class AlertService:
                 subject = f"Price Alert: {alert.crop.upper()} in {alert.city}"
                 
                 html_content = f"""
-                <h2>🔔 Price Alert Triggered</h2>
+                <h2> Price Alert Triggered</h2>
                 <p><strong>{message}</strong></p>
                 <hr>
                 <p><strong>Crop:</strong> {alert.crop.upper()}</p>
                 <p><strong>Location:</strong> {alert.city}</p>
-                <p><strong>Current Price:</strong> ₹{current_price:.2f}/kg</p>
+                <p><strong>Current Price:</strong> Rs.{current_price:.2f}/kg</p>
                 <p><strong>Alert Type:</strong> {alert.alert_type}</p>
                 <hr>
                 <p style="color: #666; font-size: 12px;">
-                    This alert was triggered at {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}.
+                    This alert was triggered at {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}.
                     You can manage your alerts in your dashboard.
                 </p>
                 """
@@ -153,17 +145,14 @@ class AlertService:
             notification = Notification(
                 user_id=alert.user_id,
                 type='price_alert',
-                title=f"🔔 {alert.crop.upper()} Price Alert",
+                title=f" {alert.crop.upper()} Price Alert",
                 message=message,
                 priority='high' if abs(current_price - (alert.threshold_price or 0)) > 100 else 'normal',
                 extra_data=f'{{"crop": "{alert.crop}", "city": "{alert.city}", "current_price": {current_price}, "alert_type": "{alert.alert_type}"}}'
             )
             db.add(notification)
             
-            # TODO: Add SMS notification when implemented
-            
-            # Update last triggered timestamp
-            alert.last_triggered_at = datetime.utcnow()
+            alert.last_triggered_at = datetime.now(timezone.utc)
             db.commit()
             
             logger.info(f"Alert {alert.id} triggered for user {alert.user_id} - in-app notification created")

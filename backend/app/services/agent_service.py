@@ -1,7 +1,3 @@
-"""
-Production-grade autonomous agent
-Combines decision engine with data services and LLM insights
-"""
 
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
@@ -21,20 +17,11 @@ from app.core.logging_config import logger
 
 
 class SmartCropAgent:
-    """
-    Production-grade autonomous agent
-    
-    Architecture:
-    1. Decision Engine (rule-based, fast, deterministic)
-    2. LLM (only for insights/explanations, not decisions)
-    3. No heavy frameworks
-    """
     
     def __init__(self):
         self.price_service = PriceService()
         self.weather_service = WeatherService()
         
-        # Configure Gemini for insights only
         try:
             genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
             self.llm = genai.GenerativeModel('gemini-flash-latest')  # Using free tier compatible model
@@ -49,17 +36,7 @@ class SmartCropAgent:
         user_preferences: Optional[Dict] = None,
         days_ahead: int = 7
     ) -> Dict:
-        """
-        Main analysis method - production optimized
         
-        Args:
-            crop: Crop name
-            city: Location for weather
-            user_preferences: User risk tolerance, etc.
-            days_ahead: Prediction period (7, 30, 90, 180 days)
-        
-        Returns decision in ~2 seconds (vs 15s with LangChain)
-        """
         start_time = datetime.now()
         logger.info(f"🤖 Agent analyzing {crop} in {city} for {days_ahead} days")
         
@@ -111,7 +88,7 @@ class SmartCropAgent:
             llm_insights = self._get_llm_insights(crop, decision)
             
             elapsed = (datetime.now() - start_time).total_seconds()
-            logger.info(f"✅ Analysis complete in {elapsed:.2f}s")
+            logger.info(f"[OK] Analysis complete in {elapsed:.2f}s")
             
             # Convert MarketSignal dataclasses to dicts for JSON serialization
             market_signals = [
@@ -146,7 +123,7 @@ class SmartCropAgent:
                 )
                 save_db.add(analysis_record)
                 # Auto-commits on success, auto-rolls back on error
-                logger.info(f"💾 Analysis saved to database (ID: {analysis_record.id})")
+                logger.info(f" Analysis saved to database (ID: {analysis_record.id})")
                     
             # Format response to match frontend expectations
             final_predicted_price = predictions[-1]['price'] if predictions else None
@@ -175,7 +152,6 @@ class SmartCropAgent:
             return self._create_error_response(str(e))
     
     def _calculate_trend(self, price_data) -> Dict:
-        """Calculate price trends from historical data"""
         
         if len(price_data) < 7:
             return {'change_7d': 0, 'change_30d': 0, 'volatility': 0}
@@ -198,10 +174,6 @@ class SmartCropAgent:
         }
     
     def _get_llm_insights(self, crop: str, decision: Decision) -> str:
-        """
-        Use LLM ONLY for generating farmer-friendly explanation
-        NOT for making decisions (that's decision_engine's job)
-        """
         
         if not self.llm:
             return decision.reasoning  # Fallback if LLM not initialized
@@ -219,7 +191,7 @@ Create a SHORT (3-4 lines) WhatsApp-style message explaining:
 2. Why (in simple words)
 3. Expected outcome
 
-Keep it practical and friendly. Use ₹ for prices."""
+Keep it practical and friendly. Use Rs. for prices."""
 
             response = self.llm.generate_content(prompt)
             return response.text.strip()
@@ -229,7 +201,6 @@ Keep it practical and friendly. Use ₹ for prices."""
             return decision.reasoning  # Fallback to rule-based reasoning
     
     def _create_error_response(self, error: str) -> Dict:
-        """Standard error response"""
         return {
             'action': 'HOLD',
             'confidence': 0.0,
@@ -239,12 +210,7 @@ Keep it practical and friendly. Use ₹ for prices."""
         }
     
     def run_daily_monitoring(self) -> List[Dict]:
-        """
-        Automated daily monitoring for all users
-        This runs at 6 AM via scheduler
-        Analyzes favorite crops for each user
-        """
-        logger.info("🌅 Running daily automated monitoring...")
+        logger.info(" Running daily automated monitoring...")
         
         alerts = []
         
@@ -255,7 +221,7 @@ Keep it practical and friendly. Use ₹ for prices."""
                 User.notification_enabled == True
             ).all()
             
-            logger.info(f"📊 Monitoring {len(users)} active users")
+            logger.info(f"[DATA] Monitoring {len(users)} active users")
             
             for user in users:
                 # Get user's favorite crops
@@ -263,10 +229,10 @@ Keep it practical and friendly. Use ₹ for prices."""
                 
                 # If no favorites set, skip this user
                 if not favorite_crops:
-                    logger.info(f"⏭️ Skipping {user.email} - no favorite crops set")
+                    logger.info(f"⏭ Skipping {user.email} - no favorite crops set")
                     continue
                 
-                logger.info(f"🔍 Analyzing {len(favorite_crops)} crops for {user.email}")
+                logger.info(f" Analyzing {len(favorite_crops)} crops for {user.email}")
                 
                 # Get user's location (default to Delhi if not set)
                 city = user.location if user.location else "Delhi"
@@ -289,12 +255,12 @@ Keep it practical and friendly. Use ₹ for prices."""
                                 'timestamp': analysis['timestamp']
                             }
                             alerts.append(alert)
-                            logger.info(f"📢 Alert created for {user.email}: {crop} - {analysis['action']}")
+                            logger.info(f" Alert created for {user.email}: {crop} - {analysis['action']}")
                     except Exception as e:
                         logger.error(f"Error analyzing {crop} for {user.email}: {str(e)}")
                         continue
             
-            logger.info(f"✅ Daily monitoring complete! Created {len(alerts)} alerts")
+            logger.info(f"[OK] Daily monitoring complete! Created {len(alerts)} alerts")
             return alerts
 
 

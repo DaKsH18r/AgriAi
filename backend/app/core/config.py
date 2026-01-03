@@ -1,13 +1,23 @@
-"""Configuration settings for the application."""
 from pydantic_settings import BaseSettings
 from typing import Optional, List
 
 
 class Settings(BaseSettings):
-    """Application settings."""
+
+    # AI Provider API Keys
+
+    # Gemini: Used for AI Crop Advisor (agent_service)
+    # Get key from: https://aistudio.google.com/app/apikey
+    GEMINI_API_KEY: Optional[str] = None
     
-    # API Keys
-    GEMINI_API_KEY: str
+    # Groq: Used for Farmer Chatbot (chatbot_service)
+    # Get key from: https://console.groq.com/keys
+    # Limits: 30 RPM, 14,400 RPD (free tier)
+    GROQ_API_KEY: Optional[str] = None
+    
+
+    # External API Keys
+
     OPENWEATHER_API_KEY: str
     DATA_GOV_IN_API_KEY: Optional[str] = None
     
@@ -48,7 +58,6 @@ class Settings(BaseSettings):
     
     @property
     def CORS_ORIGINS(self) -> List[str]:
-        """Get list of allowed CORS origins."""
         return [
             "http://localhost",           # Docker frontend
             "http://localhost:80",        # Docker frontend explicit port
@@ -65,15 +74,70 @@ class Settings(BaseSettings):
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Validate SECRET_KEY in production
-        if self.ENVIRONMENT == "production" and len(self.SECRET_KEY) < 32:
+        self._validate_secret_key()
+    
+    def _validate_secret_key(self):
+        # Minimum length check
+        if len(self.SECRET_KEY) < 32:
             raise ValueError(
-                "SECRET_KEY must be at least 32 characters in production. "
-                "Generate one with: python -c 'import secrets; print(secrets.token_urlsafe(64))'"
+                "[ERROR] SECURITY ERROR: SECRET_KEY must be at least 32 characters long.\n"
+                "Generate a secure key with:\n"
+                "  python -c \"import secrets; print(secrets.token_urlsafe(64))\"\n"
+                f"Current length: {len(self.SECRET_KEY)} characters"
             )
-        # Warn in development if using weak key
-        if self.SECRET_KEY == "" or "your" in self.SECRET_KEY.lower() or len(self.SECRET_KEY) < 32:
-            print("⚠️  WARNING: Using weak or default SECRET_KEY. Generate a secure one!")
+        
+        # Check for insecure placeholder patterns
+        insecure_patterns = [
+            "your-secret",
+            "change-me",
+            "replace",
+            "example",
+            "test-key",
+            "default",
+            "secret-key",
+            "my-secret",
+            "password",
+            "123456"
+        ]
+        
+        secret_lower = self.SECRET_KEY.lower()
+        for pattern in insecure_patterns:
+            if pattern in secret_lower:
+                if self.ENVIRONMENT == "production":
+                    raise ValueError(
+                        f"[ERROR] CRITICAL SECURITY ERROR: SECRET_KEY contains insecure pattern '{pattern}'.\n"
+                        "This is NOT allowed in production!\n"
+                        "Generate a secure random key immediately."
+                    )
+                else:
+                    print(
+                        f"[WARNING]  WARNING: SECRET_KEY contains pattern '{pattern}'. "
+                        "This is insecure! Generate a proper key for development too."
+                    )
+                    break
+        
+        # Production-specific validation
+        if self.ENVIRONMENT == "production":
+            # Ensure key looks random (has variety of characters)
+            unique_chars = len(set(self.SECRET_KEY))
+            if unique_chars < 20:  # Should have good character variety
+                raise ValueError(
+                    "[ERROR] PRODUCTION SECURITY ERROR: SECRET_KEY lacks sufficient randomness.\n"
+                    f"Only {unique_chars} unique characters found. Expected at least 20.\n"
+                    "Use a cryptographically secure random generator."
+                )
+            
+            # Log success in production
+            print("[OK] SECRET_KEY validation passed")
+        
+        # Development warning
+        elif self.ENVIRONMENT == "development":
+            if "your-secret" in secret_lower or len(self.SECRET_KEY) < 64:
+                print(
+                    "[WARNING]  DEVELOPMENT WARNING: Using non-production SECRET_KEY.\n"
+                    "   This is acceptable for local development only.\n"
+                    "   NEVER use this key in staging or production!"
+                )
 
 
 settings = Settings()

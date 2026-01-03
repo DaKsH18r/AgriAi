@@ -1,6 +1,0 @@
-# Pylance Configuration
-# These imports are available in Docker but not in local VS Code environment
-
-[tool.pyright]
-reportMissingImports = false
-reportMissingModuleSource = false

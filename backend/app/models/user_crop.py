@@ -1,4 +1,3 @@
-"""User Crops Model - Tracks user's crops and harvest plans"""
 from sqlalchemy import Column, String, Float, Boolean, DateTime, ForeignKey, Date, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -9,7 +8,6 @@ from app.database import Base
 
 
 class UserCrop(Base):
-    """User's crop inventory and harvest planning"""
     __tablename__ = "user_crops"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

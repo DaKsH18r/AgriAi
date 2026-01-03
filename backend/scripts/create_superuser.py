@@ -1,4 +1,3 @@
-"""Create a superuser account for admin panel access."""
 import sys
 from pathlib import Path
 
@@ -11,7 +10,6 @@ from app.core.security import get_password_hash
 
 
 def create_superuser(email: str, password: str, full_name: str = "Admin User"):
-    """Create a superuser account."""
     db = SessionLocal()
     try:
         # Check if user already exists

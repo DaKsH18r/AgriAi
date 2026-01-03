@@ -17,7 +17,7 @@ export const ErrorBanner: React.FC<ErrorBannerProps> = ({
   return (
     <div className="bg-red-50 border-2 border-red-200 rounded-xl p-6 mb-6">
       <div className="flex items-start gap-4">
-        <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={24} />
+        <AlertCircle className="text-red-600 shrink-0 mt-0.5" size={24} />
         <div className="flex-1">
           <h3 className="font-bold text-red-900 mb-1">Something went wrong</h3>
           <p className="text-red-700">{message}</p>

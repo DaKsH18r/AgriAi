@@ -1,137 +1,166 @@
+
 from fastapi import APIRouter, HTTPException, Query, Request
 from app.services.weather_service import WeatherService
 from app.services.weather_impact_service import weather_impact_service
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from app.core.logging_config import logger
+from app.core.config import settings
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
+# Environment-aware rate limits
+# Development: Higher limits for testing
+# Production: Lower limits to prevent abuse
+RATE_LIMIT_CURRENT = "1000/hour" if settings.ENVIRONMENT == "development" else "200/hour"
+RATE_LIMIT_FORECAST = "1000/hour" if settings.ENVIRONMENT == "development" else "100/hour"
+RATE_LIMIT_ALERTS = "1000/hour" if settings.ENVIRONMENT == "development" else "100/hour"
+
+
 @router.get("/current")
-@limiter.limit("100/hour")
-@limiter.limit("100/hour")
+@limiter.limit(RATE_LIMIT_CURRENT)
 async def get_current_weather(
     request: Request,
     city: str = Query(..., description="City name"),
     country: str = Query("IN", description="Country code")
 ):
-    """Get current weather for a city"""
-    weather_data = WeatherService.get_current_weather(city, country)
-    
-    if "error" in weather_data:
-        raise HTTPException(status_code=400, detail=weather_data["error"])
-    
-    return weather_data
+    try:
+        weather_data = WeatherService.get_current_weather(city, country)
+        
+        if "error" in weather_data:
+            logger.warning(f"Weather API error for {city}: {weather_data['error']}")
+            raise HTTPException(status_code=400, detail=weather_data["error"])
+        
+        return weather_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error fetching weather for {city}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch weather data")
+
 
 @router.get("/forecast")
-@limiter.limit("200/hour")
+@limiter.limit(RATE_LIMIT_FORECAST)
 async def get_weather_forecast(
     request: Request,
     city: str = Query(..., description="City name"),
     country: str = Query("IN", description="Country code"),
     days: int = Query(5, description="Number of days", ge=1, le=5)
 ):
-    """Get weather forecast for a city"""
-    forecast_data = WeatherService.get_forecast(city, country, days)
-    
-    if "error" in forecast_data:
-        raise HTTPException(status_code=400, detail=forecast_data["error"])
-    
-    return forecast_data
+    try:
+        forecast_data = WeatherService.get_forecast(city, country, days)
+        
+        if "error" in forecast_data:
+            logger.warning(f"Forecast API error for {city}: {forecast_data['error']}")
+            raise HTTPException(status_code=400, detail=forecast_data["error"])
+        
+        return forecast_data
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error fetching forecast for {city}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch forecast data")
+
 
 @router.get("/alerts")
-@limiter.limit("200/hour")
-async def get_weather_alerts(request: Request, city: str = Query(..., description="City name")):
-    """Get weather alerts and risk warnings"""
-    weather_data = WeatherService.get_current_weather(city)
-    
-    if "error" in weather_data:
-        raise HTTPException(status_code=400, detail=weather_data["error"])
-    
-    alerts = []
-    temp = weather_data["temperature"]
-    humidity = weather_data["humidity"]
-    wind = weather_data["wind_speed"]
-    
-    # Temperature alerts
-    if temp > 40:
-        alerts.append({
-            "type": "extreme_heat",
-            "severity": "high",
-            "message": "Extreme heat warning! Increase irrigation and provide shade for crops. Risk of heat stress."
-        })
-    elif temp > 35:
-        alerts.append({
-            "type": "heat_advisory",
-            "severity": "medium",
-            "message": "High temperature alert. Monitor soil moisture and consider evening irrigation."
-        })
-    elif temp < 5:
-        alerts.append({
-            "type": "frost_warning",
-            "severity": "high",
-            "message": "Frost warning! Protect sensitive crops. Risk of severe damage to plants."
-        })
-    elif temp < 10:
-        alerts.append({
-            "type": "cold_advisory",
-            "severity": "medium",
-            "message": "Cold weather advisory. Delay planting of warm-season crops."
-        })
-    
-    # Humidity alerts
-    if humidity > 85:
-        alerts.append({
-            "type": "high_humidity",
-            "severity": "medium",
-            "message": "High humidity detected. Increased risk of fungal diseases. Monitor crops closely."
-        })
-    elif humidity < 30:
-        alerts.append({
-            "type": "low_humidity",
-            "severity": "medium",
-            "message": "Low humidity. Plants may need additional watering. Monitor for drought stress."
-        })
-    
-    # Wind alerts
-    if wind > 10:
-        alerts.append({
-            "type": "high_wind",
-            "severity": "medium",
-            "message": "Strong winds detected. Secure loose equipment and check for crop damage."
-        })
-    
-    # Optimal conditions
-    if 20 <= temp <= 30 and 40 <= humidity <= 70 and wind < 8:
-        alerts.append({
-            "type": "optimal_conditions",
-            "severity": "low",
-            "message": "Perfect farming conditions! Good time for planting, spraying, and field operations."
-        })
-    
-    return {
-        "city": weather_data["city"],
-        "alerts": alerts,
-        "current_conditions": weather_data
-    }
+@limiter.limit(RATE_LIMIT_ALERTS)
+async def get_weather_alerts(
+    request: Request, 
+    city: str = Query(..., description="City name")
+):
+    try:
+        weather_data = WeatherService.get_current_weather(city)
+        
+        if "error" in weather_data:
+            logger.warning(f"Weather alerts API error for {city}: {weather_data['error']}")
+            raise HTTPException(status_code=400, detail=weather_data["error"])
+        
+        alerts = []
+        temp = weather_data["temperature"]
+        humidity = weather_data["humidity"]
+        wind = weather_data["wind_speed"]
+        
+        # Temperature alerts
+        if temp > 40:
+            alerts.append({
+                "type": "extreme_heat",
+                "severity": "high",
+                "message": f"Extreme heat alert! Temperature is {temp}°C. Avoid field work during peak hours.",
+                "recommendation": "Work early morning or evening. Ensure adequate water for crops and livestock."
+            })
+        elif temp > 35:
+            alerts.append({
+                "type": "heat_warning",
+                "severity": "medium",
+                "message": f"Heat warning. Temperature is {temp}°C.",
+                "recommendation": "Increase irrigation frequency. Provide shade for sensitive crops."
+            })
+        elif temp < 5:
+            alerts.append({
+                "type": "frost_warning",
+                "severity": "high",
+                "message": f"Frost warning! Temperature is {temp}°C.",
+                "recommendation": "Cover sensitive plants. Delay sowing of frost-sensitive crops."
+            })
+        
+        # Humidity alerts
+        if humidity > 85:
+            alerts.append({
+                "type": "high_humidity",
+                "severity": "medium",
+                "message": f"High humidity at {humidity}%. Disease risk increased.",
+                "recommendation": "Monitor for fungal diseases. Ensure good air circulation."
+            })
+        elif humidity < 30:
+            alerts.append({
+                "type": "low_humidity",
+                "severity": "low",
+                "message": f"Low humidity at {humidity}%.",
+                "recommendation": "Increase irrigation. Consider mulching to retain soil moisture."
+            })
+        
+        # Wind alerts
+        if wind > 15:
+            alerts.append({
+                "type": "strong_wind",
+                "severity": "medium",
+                "message": f"Strong winds at {wind} m/s.",
+                "recommendation": "Avoid spraying pesticides. Secure greenhouse covers and shade nets."
+            })
+        
+        return {
+            "city": city,
+            "alerts": alerts,
+            "current_conditions": weather_data,
+            "timestamp": weather_data.get("timestamp"),
+            "cached": weather_data.get("cached", False)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error fetching alerts for {city}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch weather alerts")
 
 
-@router.get("/impact")
-@limiter.limit("100/hour")
+@router.get("/impact/{crop}")
+@limiter.limit(RATE_LIMIT_FORECAST)
 async def get_weather_impact(
     request: Request,
-    crop: str = Query(..., description="Crop name (wheat, rice, etc.)"),
-    city: str = Query(..., description="City name"),
-    days: int = Query(7, description="Forecast days", ge=1, le=16)
+    crop: str,
+    city: str = Query(..., description="City name")
 ):
-    """
-    Get weather impact analysis for a specific crop
-    Returns impact assessment and farming recommendations
-    """
     try:
-        impact_data = await weather_impact_service.analyze_weather_impact(crop, city, days)
-        return impact_data
+        impact = weather_impact_service.get_weather_impact(city, crop)
+        
+        if "error" in impact:
+            logger.warning(f"Weather impact error for {crop} in {city}: {impact['error']}")
+            raise HTTPException(status_code=400, detail=impact["error"])
+        
+        return impact
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Weather impact analysis failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Weather impact analysis failed: {str(e)}")
+        logger.error(f"Unexpected error analyzing weather impact: {e}")
+        raise HTTPException(status_code=500, detail="Failed to analyze weather impact")

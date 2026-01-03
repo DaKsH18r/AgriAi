@@ -1,7 +1,5 @@
-/**
- * Language Selector Component
- * Allows users to switch between supported languages
- */
+/* Language Selector Component
+ * Allows users to switch between supported languages */
 
 import { Globe } from "lucide-react";
 import { useLanguage } from "../context/LanguageContext";

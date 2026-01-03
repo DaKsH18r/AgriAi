@@ -1,7 +1,3 @@
-"""
-Email Service - Production-grade email sending
-Supports both SendGrid (recommended) and SMTP (Gmail, Outlook, etc.)
-"""
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -14,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class EmailService:
-    """Email service supporting SendGrid and SMTP."""
     
     def __init__(self):
         self.enabled = settings.EMAIL_ENABLED
@@ -28,14 +23,14 @@ class EmailService:
         
         if self.enabled:
             if self.sendgrid_api_key:
-                logger.info("📧 Email service: SendGrid configured")
+                logger.info(" Email service: SendGrid configured")
             elif self.smtp_configured:
-                logger.info(f"📧 Email service: SMTP configured ({settings.SMTP_HOST})")
+                logger.info(f" Email service: SMTP configured ({settings.SMTP_HOST})")
             else:
-                logger.warning("⚠️ EMAIL_ENABLED=True but no email service configured!")
+                logger.warning("[WARNING] EMAIL_ENABLED=True but no email service configured!")
                 self.enabled = False
         else:
-            logger.info("📧 Email service: Disabled (console-only mode)")
+            logger.info(" Email service: Disabled (console-only mode)")
     
     async def send_email(
         self,
@@ -44,18 +39,6 @@ class EmailService:
         html_content: str,
         text_content: Optional[str] = None
     ) -> bool:
-        """
-        Send email using configured service.
-        
-        Args:
-            to_email: Recipient email address
-            subject: Email subject
-            html_content: HTML email body
-            text_content: Plain text fallback (optional)
-        
-        Returns:
-            bool: True if sent successfully, False otherwise
-        """
         if not self.enabled:
             # Console-only mode for development
             self._log_email_to_console(to_email, subject, html_content)
@@ -75,18 +58,10 @@ class EmailService:
             self._log_email_to_console(to_email, subject, html_content)
             return False
     
-    async def _send_via_sendgrid(
-        self,
-        to_email: str,
-        subject: str,
-        html_content: str,
-        text_content: Optional[str]
-    ) -> bool:
-        """Send email via SendGrid API."""
+    async def _send_via_sendgrid(self, to_email: str, subject: str, html_content: str, text_content: Optional[str] = None) -> bool:
         try:
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail, Email, To, Content
-            
             message = Mail(
                 from_email=Email(
                     settings.SMTP_FROM_EMAIL or "noreply@agri-ai.com",
@@ -96,20 +71,16 @@ class EmailService:
                 subject=subject,
                 html_content=Content("text/html", html_content)
             )
-            
             if text_content:
                 message.add_content(Content("text/plain", text_content))
-            
             sg = SendGridAPIClient(self.sendgrid_api_key)
             response = sg.send(message)
-            
             if response.status_code in [200, 201, 202]:
-                logger.info(f"✅ Email sent to {to_email} via SendGrid")
+                logger.info(f"[OK] Email sent to {to_email} via SendGrid")
                 return True
             else:
                 logger.error(f"SendGrid error: {response.status_code}")
                 return False
-                
         except ImportError:
             logger.error("SendGrid library not installed. Run: pip install sendgrid")
             return False
@@ -117,47 +88,34 @@ class EmailService:
             logger.error(f"SendGrid error: {str(e)}")
             return False
     
-    async def _send_via_smtp(
-        self,
-        to_email: str,
-        subject: str,
-        html_content: str,
-        text_content: Optional[str]
-    ) -> bool:
-        """Send email via SMTP (Gmail, Outlook, etc.)."""
+    async def _send_via_smtp(self, to_email: str, subject: str, html_content: str, text_content: Optional[str] = None) -> bool:
         try:
             # Create message
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
             msg['From'] = f"{settings.SMTP_FROM_NAME} <{settings.SMTP_FROM_EMAIL}>"
             msg['To'] = to_email
-            
             # Add plain text version if provided
             if text_content:
                 part1 = MIMEText(text_content, 'plain')
                 msg.attach(part1)
-            
             # Add HTML version
             part2 = MIMEText(html_content, 'html')
             msg.attach(part2)
-            
             # Send via SMTP
             with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                 server.send_message(msg)
-            
-            logger.info(f"✅ Email sent to {to_email} via SMTP")
+            logger.info(f"[OK] Email sent to {to_email} via SMTP")
             return True
-            
         except Exception as e:
             logger.error(f"SMTP error: {str(e)}")
             return False
     
     def _log_email_to_console(self, to_email: str, subject: str, html_content: str):
-        """Log email to console (development mode)."""
         logger.info("\n" + "="*80)
-        logger.info("📧 EMAIL (Console Mode - Development Only)")
+        logger.info(" EMAIL (Console Mode - Development Only)")
         logger.info("="*80)
         logger.info(f"To: {to_email}")
         logger.info(f"Subject: {subject}")
@@ -174,17 +132,6 @@ class EmailService:
         reset_link: str,
         user_name: Optional[str] = None
     ) -> bool:
-        """
-        Send password reset email with professional template.
-        
-        Args:
-            to_email: User's email address
-            reset_link: Password reset link with token
-            user_name: User's name for personalization
-        
-        Returns:
-            bool: True if sent successfully
-        """
         display_name = user_name or to_email.split('@')[0]
         
         # HTML email template
@@ -206,7 +153,7 @@ class EmailService:
                             <tr>
                                 <td style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); padding: 40px 20px; text-align: center;">
                                     <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: bold;">
-                                        🌾 AgriAI
+                                         AgriAI
                                     </h1>
                                     <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 16px;">
                                         Smart Farming Platform
@@ -277,10 +224,6 @@ class EmailService:
             </table>
         </body>
         </html>
-        """
-        
-        # Plain text fallback
-        text_content = f"""
         AgriAI - Reset Your Password
         
         Hi {display_name},
@@ -310,7 +253,6 @@ class EmailService:
         to_email: str,
         user_name: Optional[str] = None
     ) -> bool:
-        """Send welcome email to new users."""
         display_name = user_name or to_email.split('@')[0]
         
         html_content = f"""
@@ -327,12 +269,12 @@ class EmailService:
                         <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                             <tr>
                                 <td style="background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); padding: 40px 20px; text-align: center;">
-                                    <h1 style="margin: 0; color: #ffffff; font-size: 32px;">🌾 Welcome to AgriAI!</h1>
+                                    <h1 style="margin: 0; color: #ffffff; font-size: 32px;"> Welcome to AgriAI!</h1>
                                 </td>
                             </tr>
                             <tr>
                                 <td style="padding: 40px 30px;">
-                                    <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 24px;">Hi {display_name}! 👋</h2>
+                                    <h2 style="margin: 0 0 20px 0; color: #1f2937; font-size: 24px;">Hi {display_name}! [BYE]</h2>
                                     <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
                                         Welcome to AgriAI - your smart farming companion! We're excited to have you on board.
                                     </p>
@@ -341,10 +283,10 @@ class EmailService:
                                     </p>
                                     <ul style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.8;">
                                         <li>🤖 Get AI-powered farming insights</li>
-                                        <li>🌦️ Real-time weather monitoring</li>
-                                        <li>💰 Crop price predictions</li>
-                                        <li>📊 Yield forecasting</li>
-                                        <li>💬 24/7 AI chatbot assistant</li>
+                                        <li>[WEATHER] Real-time weather monitoring</li>
+                                        <li> Crop price predictions</li>
+                                        <li>[DATA] Yield forecasting</li>
+                                        <li> 24/7 AI chatbot assistant</li>
                                     </ul>
                                     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                                         <tr>
@@ -368,9 +310,6 @@ class EmailService:
             </table>
         </body>
         </html>
-        """
-        
-        text_content = f"""
         Welcome to AgriAI!
         
         Hi {display_name}!
@@ -391,7 +330,7 @@ class EmailService:
         
         return await self.send_email(
             to_email=to_email,
-            subject="Welcome to AgriAI! 🌾",
+            subject="Welcome to AgriAI! ",
             html_content=html_content,
             text_content=text_content
         )

@@ -16,7 +16,7 @@ async def predict_crop_prices(
     crop: str = Query(..., description="Crop name (wheat, rice, tomato, onion, potato, cotton, sugarcane)"),
     days: int = Query(30, description="Number of days to predict", ge=7, le=90)
 ):
-    """Predict future prices for a crop"""
+    
     try:
         from app.services.price_service import PriceService
         
@@ -41,7 +41,7 @@ async def get_historical_prices(
     crop: str = Query(..., description="Crop name"),
     days: int = Query(90, description="Number of days of history", ge=30, le=365)
 ):
-    """Get historical price data for a crop"""
+    
     try:
         # Get historical data from database (real + synthetic)
         historical_df = data_service.get_price_data(crop, days=days)
@@ -80,7 +80,7 @@ async def compare_markets(
     request: Request,
     crop: str = Query(..., description="Crop name")
 ):
-    """Compare prices across different mandis"""
+    
     try:
         comparison_data = PriceService.get_market_comparison(crop)
         
@@ -95,7 +95,7 @@ async def compare_markets(
 @router.get("/crops")
 @limiter.limit("200/hour")  # Higher limit for simple list
 async def get_supported_crops(request: Request):
-    """Get list of supported crops"""
+    
     return {
         "crops": PriceService.CROPS,
         "total": len(PriceService.CROPS)

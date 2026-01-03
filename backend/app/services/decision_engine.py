@@ -1,8 +1,3 @@
-"""
-Production-grade decision engine for crop advisory
-No frameworks - pure logic + simple LLM calls
-Fast, deterministic, and explainable
-"""
 
 import logging
 from datetime import datetime, timedelta
@@ -15,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class MarketSignal:
-    """Structured market signal"""
     signal_type: str  # 'BULLISH', 'BEARISH', 'NEUTRAL'
     strength: float  # 0.0 to 1.0
     reason: str
@@ -24,7 +18,6 @@ class MarketSignal:
 
 @dataclass
 class Decision:
-    """Final decision output"""
     action: str  # 'SELL_NOW', 'WAIT', 'HOLD'
     confidence: float  # 0.0 to 1.0
     reasoning: str
@@ -36,11 +29,6 @@ class Decision:
 
 
 class DecisionEngine:
-    """
-    Rule-based decision engine with ML insights
-    Fast, deterministic, and explainable
-    """
-    
     # Decision thresholds (tuned for Indian agriculture)
     PRICE_DROP_ALERT = -5.0  # Alert if price drops >5%
     PRICE_RISE_OPPORTUNITY = 10.0  # Sell if price rises >10%
@@ -59,18 +47,7 @@ class DecisionEngine:
         weather_forecast: Optional[Dict] = None,
         user_preferences: Optional[Dict] = None
     ) -> Decision:
-        """
-        Main decision logic - pure deterministic rules
-        
-        Flow:
-        1. Analyze price predictions
-        2. Check weather impact
-        3. Evaluate trends
-        4. Calculate risk
-        5. Make decision
-        """
-        
-        logger.info(f"🧮 Analyzing {crop} at ₹{current_price:.2f}/kg")
+        logger.info(f"🧮 Analyzing {crop} at Rs.{current_price:.2f}/kg")
         
         signals = []
         
@@ -114,8 +91,6 @@ class DecisionEngine:
         current_price: float,
         predictions: List[Dict]
     ) -> MarketSignal:
-        """Analyze ML price predictions"""
-        
         if not predictions or len(predictions) == 0:
             return MarketSignal(
                 signal_type='NEUTRAL',
@@ -133,17 +108,17 @@ class DecisionEngine:
         if price_change > self.PRICE_RISE_OPPORTUNITY:
             signal_type = 'BULLISH'
             strength = min(1.0, price_change / 20.0)  # Cap at 20% = 1.0
-            reason = f"Price predicted to rise {price_change:+.1f}% in 7 days (₹{current_price:.2f} → ₹{future_price:.2f})"
+            reason = f"Price predicted to rise {price_change:+.1f}% in 7 days (Rs.{current_price:.2f} → Rs.{future_price:.2f})"
         
         elif price_change < self.PRICE_DROP_ALERT:
             signal_type = 'BEARISH'
             strength = min(1.0, abs(price_change) / 20.0)
-            reason = f"Price predicted to drop {price_change:.1f}% in 7 days (₹{current_price:.2f} → ₹{future_price:.2f})"
+            reason = f"Price predicted to drop {price_change:.1f}% in 7 days (Rs.{current_price:.2f} → Rs.{future_price:.2f})"
         
         else:
             signal_type = 'NEUTRAL'
             strength = 0.3
-            reason = f"Price stable around ₹{current_price:.2f}/kg (change: {price_change:+.1f}%)"
+            reason = f"Price stable around Rs.{current_price:.2f}/kg (change: {price_change:+.1f}%)"
         
         # Adjust strength by confidence
         strength *= avg_confidence
@@ -156,8 +131,6 @@ class DecisionEngine:
         )
     
     def _analyze_price_trend(self, trend: Dict) -> MarketSignal:
-        """Analyze historical price trends"""
-        
         change_7d = trend.get('change_7d', 0)
         change_30d = trend.get('change_30d', 0)
         
@@ -201,13 +174,6 @@ class DecisionEngine:
         crop: str, 
         forecast: Dict
     ) -> MarketSignal:
-        """
-        Analyze weather impact on crop prices
-        
-        Rain → Perishables (tomato, onion) prices rise (supply disruption)
-        Rain → Grains (wheat, rice) prices stable/fall (good for growth)
-        """
-        
         # Weather-sensitive crops
         perishables = ['tomato', 'onion', 'potato']
         grains = ['wheat', 'rice', 'soyabean']
@@ -250,8 +216,6 @@ class DecisionEngine:
             )
     
     def _analyze_volatility(self, trend: Dict) -> MarketSignal:
-        """Analyze price volatility for risk assessment"""
-        
         volatility = trend.get('volatility', 0)
         
         if volatility > 15:
@@ -286,15 +250,6 @@ class DecisionEngine:
         signals: List[MarketSignal],
         user_preferences: Optional[Dict]
     ) -> Decision:
-        """
-        Combine all signals into final decision
-        
-        Logic:
-        - If strong BEARISH signals → SELL_NOW
-        - If strong BULLISH signals → WAIT for peak
-        - If mixed/weak signals → HOLD
-        """
-        
         # Calculate weighted score
         bullish_score = sum(s.strength for s in signals if s.signal_type == 'BULLISH')
         bearish_score = sum(s.strength for s in signals if s.signal_type == 'BEARISH')
@@ -336,7 +291,7 @@ class DecisionEngine:
         # Adjust for risk tolerance
         if risk_tolerance == 'low' and action == 'WAIT':
             action = 'SELL_NOW'
-            reasoning += "\n\n⚠️ Adjusted to SELL_NOW based on your low risk tolerance."
+            reasoning += "\n\n[WARNING] Adjusted to SELL_NOW based on your low risk tolerance."
         
         return Decision(
             action=action,
@@ -356,13 +311,11 @@ class DecisionEngine:
         )
     
     def _format_reasoning(self, signals: List[MarketSignal], action: str) -> str:
-        """Format human-readable reasoning"""
-        
         reasoning_parts = [f"**Decision: {action}**\n"]
         
         reasoning_parts.append("**Analysis:**")
         for i, signal in enumerate(signals, 1):
-            emoji = "📈" if signal.signal_type == 'BULLISH' else "📉" if signal.signal_type == 'BEARISH' else "➡️"
+            emoji = "[UP]" if signal.signal_type == 'BULLISH' else "[DOWN]" if signal.signal_type == 'BEARISH' else "[RIGHT]"
             reasoning_parts.append(f"{i}. {emoji} {signal.reason} (Confidence: {signal.strength:.0%})")
         
         if action == 'SELL_NOW':

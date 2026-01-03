@@ -1,12 +1,6 @@
-/**
- * Multi-language translations for AgriAI Platform
- * Supports: English, Hindi, Marathi, Punjabi, Tamil
- */
-
 export type Language = "en" | "hi" | "mr" | "pa" | "ta";
 
 export interface Translations {
-  // Navigation
   dashboard: string;
   alerts: string;
   profile: string;

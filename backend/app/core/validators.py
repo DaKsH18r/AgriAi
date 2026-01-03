@@ -1,6 +1,3 @@
-"""
-Input validation and sanitization utilities
-"""
 
 import re
 from typing import Optional
@@ -8,7 +5,6 @@ from fastapi import HTTPException, status
 
 
 def validate_email(email: str) -> str:
-    """Validate and sanitize email address"""
     email = email.strip().lower()
     
     # Email regex pattern
@@ -30,15 +26,6 @@ def validate_email(email: str) -> str:
 
 
 def validate_password(password: str) -> str:
-    """
-    Validate password strength
-    Requirements:
-    - At least 8 characters
-    - At least one uppercase letter
-    - At least one lowercase letter
-    - At least one digit
-    - At least one special character
-    """
     if len(password) < 8:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -79,7 +66,6 @@ def validate_password(password: str) -> str:
 
 
 def sanitize_string(text: str, max_length: int = 1000) -> str:
-    """Sanitize user input string"""
     if not text:
         return ""
     
@@ -97,7 +83,6 @@ def sanitize_string(text: str, max_length: int = 1000) -> str:
 
 
 def validate_crop_name(crop: str) -> str:
-    """Validate crop name"""
     crop = sanitize_string(crop, max_length=100)
     
     # Only allow letters, spaces, and hyphens
@@ -111,7 +96,6 @@ def validate_crop_name(crop: str) -> str:
 
 
 def validate_city_name(city: str) -> str:
-    """Validate city name"""
     city = sanitize_string(city, max_length=100)
     
     # Only allow letters, spaces, and hyphens
@@ -125,7 +109,6 @@ def validate_city_name(city: str) -> str:
 
 
 def validate_phone(phone: Optional[str]) -> Optional[str]:
-    """Validate phone number"""
     if not phone:
         return None
     
@@ -145,7 +128,6 @@ def validate_phone(phone: Optional[str]) -> Optional[str]:
 
 
 def validate_numeric_range(value: float, min_val: float, max_val: float, field_name: str) -> float:
-    """Validate numeric value is within range"""
     if value < min_val or value > max_val:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

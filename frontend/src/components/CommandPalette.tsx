@@ -221,15 +221,13 @@ export const CommandPalette: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 animate-fadeIn">
-      {/* Backdrop */}
+      {" "}
       <div
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => setIsOpen(false)}
-      />
-
-      {/* Command Palette */}
+      />{" "}
       <div className="relative w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-2xl animate-slideUp">
-        {/* Search Input */}
+        {" "}
         <div className="flex items-center gap-3 p-4 border-b border-gray-200">
           <Search className="text-gray-400" size={20} />
           <input
@@ -248,9 +246,7 @@ export const CommandPalette: React.FC = () => {
             <kbd className="px-2 py-1 bg-gray-100 rounded font-mono">ESC</kbd>
             <span>to close</span>
           </div>
-        </div>
-
-        {/* Commands List */}
+        </div>{" "}
         <div className="max-h-96 overflow-y-auto p-2">
           {filteredCommands.length === 0 ? (
             <div className="py-12 text-center text-gray-500">
@@ -258,7 +254,7 @@ export const CommandPalette: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Navigation Section */}
+              {" "}
               {groupedCommands.navigation.length > 0 && (
                 <div className="mb-4">
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
@@ -274,7 +270,7 @@ export const CommandPalette: React.FC = () => {
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${
                           selectedIndex === globalIndex
-                            ? "bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-l-green-500"
+                            ? "bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-l-green-500"
                             : "hover:bg-gray-50"
                         }`}
                       >
@@ -297,9 +293,7 @@ export const CommandPalette: React.FC = () => {
                     );
                   })}
                 </div>
-              )}
-
-              {/* Docs Section */}
+              )}{" "}
               {groupedCommands.docs.length > 0 && (
                 <div className="mb-4">
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
@@ -315,7 +309,7 @@ export const CommandPalette: React.FC = () => {
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${
                           selectedIndex === globalIndex
-                            ? "bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-l-blue-500"
+                            ? "bg-linear-to-r from-blue-50 to-purple-50 border-l-4 border-l-blue-500"
                             : "hover:bg-gray-50"
                         }`}
                       >
@@ -338,9 +332,7 @@ export const CommandPalette: React.FC = () => {
                     );
                   })}
                 </div>
-              )}
-
-              {/* Actions Section */}
+              )}{" "}
               {groupedCommands.actions.length > 0 && (
                 <div>
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
@@ -356,7 +348,7 @@ export const CommandPalette: React.FC = () => {
                         onMouseEnter={() => setSelectedIndex(globalIndex)}
                         className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg transition ${
                           selectedIndex === globalIndex
-                            ? "bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-l-red-500"
+                            ? "bg-linear-to-r from-red-50 to-orange-50 border-l-4 border-l-red-500"
                             : "hover:bg-gray-50"
                         }`}
                       >
@@ -382,9 +374,7 @@ export const CommandPalette: React.FC = () => {
               )}
             </>
           )}
-        </div>
-
-        {/* Footer */}
+        </div>{" "}
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
           <div className="flex items-center gap-2 text-xs text-gray-500">
             <kbd className="px-2 py-1 bg-white border border-gray-200 rounded font-mono">

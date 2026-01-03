@@ -29,13 +29,31 @@ else:
     engine = create_engine(
         DATABASE_URL,
         poolclass=QueuePool,
-        pool_size=20,              # Number of connections to maintain
-        max_overflow=10,           # Additional connections if pool exhausted
+        pool_size=10,              # Base connections (optimized from 20)
+        max_overflow=20,           # Additional connections if pool exhausted (increased)
         pool_timeout=30,           # Timeout waiting for connection (seconds)
         pool_recycle=3600,         # Recycle connections after 1 hour
         pool_pre_ping=True,        # Verify connections before using
         echo=False
     )
+    
+    # Pool event listeners for monitoring
+    @event.listens_for(engine, "connect")
+    def receive_connect(dbapi_conn, connection_record):
+        logger.info(
+            "Database connection opened",
+            extra={"pool_size": engine.pool.size()}
+        )
+    
+    @event.listens_for(engine, "checkout")
+    def receive_checkout(dbapi_conn, connection_record, connection_proxy):
+        logger.info(
+            "Connection checked out from pool",
+            extra={
+                "checked_out": engine.pool.checkedout(),
+                "overflow": engine.pool.overflow()
+            }
+        )
     
     # Set PostgreSQL-specific parameters
     @event.listens_for(engine, "connect")
@@ -50,7 +68,6 @@ Base = declarative_base()
 
 
 def get_db():
-    """Dependency for database sessions - automatically handles cleanup"""
     db = SessionLocal()
     try:
         yield db
@@ -58,8 +75,28 @@ def get_db():
         db.close()
 
 
+def get_pool_status():
+    if is_sqlite:
+        return {
+            "type": "sqlite",
+            "status": "no pooling (single connection)"
+        }
+    
+    return {
+        "type": "pooled",
+        "size": engine.pool.size(),
+        "checked_in": engine.pool.checkedin(),
+        "checked_out": engine.pool.checkedout(),
+        "overflow": engine.pool.overflow(),
+        "total_connections": engine.pool.size() + engine.pool.overflow(),
+        "max_connections": 30,  # pool_size + max_overflow
+        "utilization_percent": round(
+            (engine.pool.checkedout() / 30) * 100, 2
+        )
+    }
+
+
 def init_db():
-    """Initialize database tables"""
     from app.models import user, price_data, prediction_history, agent_analysis, notification
     
     # Import all models to ensure they're registered

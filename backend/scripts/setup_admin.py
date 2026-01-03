@@ -1,4 +1,3 @@
-"""Make specific user admin and clean up other users."""
 import sys
 from pathlib import Path
 
@@ -10,7 +9,6 @@ from app.models.user import User
 
 
 def setup_admin(admin_email: str):
-    """Make user admin and remove all other users."""
     db = SessionLocal()
     try:
         # Get the admin user

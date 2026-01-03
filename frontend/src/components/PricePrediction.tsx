@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   TrendingUp,
   TrendingDown,
@@ -6,6 +6,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { priceAPI } from "../services/api";
+import { logger } from "../utils/logger";
 import type {
   PricePrediction as PricePredictionType,
   MarketComparisonData,
@@ -23,7 +24,7 @@ import {
   Legend,
 } from "recharts";
 
-export default function PricePrediction() {
+const PricePrediction = () => {
   const [selectedCrop, setSelectedCrop] = useState("wheat");
   const [predictionDays, setPredictionDays] = useState(30);
   const [prediction, setPrediction] = useState<PricePredictionType | null>(
@@ -44,20 +45,41 @@ export default function PricePrediction() {
     { value: "sugarcane", label: "Sugarcane (गन्ना)", icon: "🎋" },
   ];
 
-  // ✅ Memoized fetch function (fixes useEffect dependency warning)
   const fetchPredictions = useCallback(async () => {
     setLoading(true);
     setError("");
+
     try {
-      const [predData, marketData] = await Promise.all([
+      // Fetch APIs independently so one failure doesn't block others
+      const [predResult, marketResult] = await Promise.allSettled([
         priceAPI.getPrediction(selectedCrop, predictionDays),
         priceAPI.compareMarkets(selectedCrop),
       ]);
-      setPrediction(predData);
-      setMarketComparison(marketData);
+
+      // Handle prediction result (main data)
+      if (predResult.status === "fulfilled") {
+        setPrediction(predResult.value);
+      } else {
+        logger.error("Prediction error", {
+          error: predResult.reason,
+          component: "PricePrediction",
+        });
+        setError("Failed to fetch price predictions. Please try again.");
+        return;
+      }
+
+      // Handle market comparison (optional)
+      if (marketResult.status === "fulfilled") {
+        setMarketComparison(marketResult.value);
+      } else {
+        logger.warn("Market comparison unavailable", {
+          error: marketResult.reason,
+        });
+        setMarketComparison(null);
+      }
     } catch (err) {
       setError("Failed to fetch price data. Please try again.");
-      console.error(err);
+      logger.error("Failed to fetch price data", { error: err });
     } finally {
       setLoading(false);
     }
@@ -104,7 +126,7 @@ export default function PricePrediction() {
   return (
     <div className="min-h-full bg-slate-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {" "}
         <div className="mb-8">
           <h1 className="text-3xl font-semibold text-slate-900 mb-2">
             Market Price Prediction
@@ -112,12 +134,10 @@ export default function PricePrediction() {
           <p className="text-slate-600">
             AI-powered price forecasts to help you sell at the right time
           </p>
-        </div>
-
-        {/* Controls */}
+        </div>{" "}
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-8">
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Crop Selection */}
+            {" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Crop
@@ -138,9 +158,7 @@ export default function PricePrediction() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Prediction Period */}
+            </div>{" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Prediction Period: {predictionDays} days
@@ -161,13 +179,17 @@ export default function PricePrediction() {
             </div>
           </div>
         </div>
-
         {error && (
-          <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-            {error}
+          <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center justify-between">
+            <span>{error}</span>
+            <button
+              onClick={fetchPredictions}
+              className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
+            >
+              Retry
+            </button>
           </div>
         )}
-
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
@@ -178,8 +200,8 @@ export default function PricePrediction() {
         ) : (
           prediction && (
             <>
-              {/* Key Metrics */}
-              <div className="grid md:grid-cols-4 gap-6 mb-8">
+              {" "}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-xl shadow-lg">
                   <div className="flex items-center justify-between mb-4">
                     <DollarSign className="text-blue-500" size={32} />
@@ -228,7 +250,7 @@ export default function PricePrediction() {
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-500 to-blue-500 p-6 rounded-xl shadow-lg text-white">
+                <div className="bg-emerald-900 p-6 rounded-xl shadow-lg text-white">
                   <div className="flex items-center justify-between mb-4">
                     <AlertCircle size={32} />
                     <span className="text-sm">Trend</span>
@@ -238,16 +260,14 @@ export default function PricePrediction() {
                   </p>
                   <p className="text-sm mt-2 opacity-90">Market Direction</p>
                 </div>
-              </div>
-
-              {/* Recommendation */}
+              </div>{" "}
               <div
                 className={`mb-8 p-6 rounded-xl border-l-4 ${getRecommendationColor(
                   prediction.recommendation
                 )}`}
               >
                 <div className="flex items-start">
-                  <AlertCircle className="mr-3 flex-shrink-0 mt-1" size={24} />
+                  <AlertCircle className="mr-3 shrink-0 mt-1" size={24} />
                   <div>
                     <h3 className="font-semibold text-lg mb-1">
                       Selling Recommendation
@@ -255,9 +275,7 @@ export default function PricePrediction() {
                     <p className="text-sm">{prediction.recommendation}</p>
                   </div>
                 </div>
-              </div>
-
-              {/* Price Trend Chart */}
+              </div>{" "}
               <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
                   Price Trend & Forecast
@@ -294,9 +312,7 @@ export default function PricePrediction() {
                     />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
-
-              {/* Market Comparison */}
+              </div>{" "}
               {marketComparison && (
                 <div className="bg-white p-6 rounded-xl shadow-lg">
                   <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -333,4 +349,6 @@ export default function PricePrediction() {
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(PricePrediction);

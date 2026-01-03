@@ -1,16 +1,11 @@
 import { useEffect } from "react";
 
-/**
- * Production-grade Web Vitals monitoring
- * Tracks Core Web Vitals: LCP, FID, CLS, FCP, TTFB
- */
 export const useWebVitals = () => {
   useEffect(() => {
     if (typeof window === "undefined" || !("PerformanceObserver" in window)) {
       return;
     }
 
-    // Largest Contentful Paint (LCP)
     const lcpObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1] as PerformanceEntry & {
@@ -33,7 +28,6 @@ export const useWebVitals = () => {
       // LCP observer not supported
     }
 
-    // First Input Delay (FID)
     const fidObserver = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       entries.forEach(
@@ -54,7 +48,6 @@ export const useWebVitals = () => {
       // FID observer not supported
     }
 
-    // Cumulative Layout Shift (CLS)
     let clsScore = 0;
     const clsObserver = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
@@ -88,9 +81,6 @@ export const useWebVitals = () => {
   }, []);
 };
 
-/**
- * Resource timing monitoring
- */
 export const logResourceTiming = () => {
   if (typeof window === "undefined") return;
 

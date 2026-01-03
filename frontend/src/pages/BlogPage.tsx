@@ -77,35 +77,30 @@ export const BlogPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-green-50/30">
-      {/* Simple Nav */}
-      <nav className="fixed top-0 w-full glass border-b border-gray-200/50 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">🌾</span>
-            </div>
-            <span className="text-xl font-bold gradient-text">AgriAI</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link
-              to="/login"
-              className="text-gray-700 hover:text-green-600 font-medium"
-            >
-              Login
-            </Link>
-            <Link
-              to="/register"
-              className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition"
-            >
-              Get Started
-            </Link>
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-green-50/30">      <nav className="fixed top-0 w-full glass border-b border-gray-200/50 z-50">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link to="/" className="flex items-center space-x-2">
+          <div className="w-10 h-10 bg-linear-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-xl">🌾</span>
           </div>
+          <span className="text-xl font-bold gradient-text">AgriAI</span>
+        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/login"
+            className="text-gray-700 hover:text-green-600 font-medium"
+          >
+            Login
+          </Link>
+          <Link
+            to="/register"
+            className="bg-emerald-900 hover:bg-emerald-800 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition"
+          >
+            Get Started
+          </Link>
         </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="pt-32 pb-12 px-4">
+      </div>
+    </nav>      <section className="pt-32 pb-12 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
             AgriAI Blog
@@ -114,46 +109,34 @@ export const BlogPage: React.FC = () => {
             Insights, tips, and stories from the future of farming
           </p>
         </div>
-      </section>
-
-      {/* Category Filter */}
-      <section className="px-4 mb-12">
+      </section>      <section className="px-4 mb-12">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-wrap gap-3 justify-center">
             {categories.map((category, idx) => (
               <button
                 key={idx}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  idx === 0
-                    ? "bg-green-500 text-white shadow-lg"
-                    : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium transition ${idx === 0
+                  ? "bg-emerald-900 text-white shadow-lg"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                  }`}
               >
                 {category}
               </button>
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Blog Posts Grid */}
-      <section className="px-4 pb-20">
+      </section>      <section className="px-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post, idx) => (
               <article
                 key={idx}
                 className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden card-hover"
+              >                <div
+                className={`h-48 bg-linear-to-br ${post.image} flex items-center justify-center`}
               >
-                {/* Featured Image */}
-                <div
-                  className={`h-48 bg-gradient-to-br ${post.image} flex items-center justify-center`}
-                >
                   <Tag className="text-white opacity-30" size={64} />
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
+                </div>                <div className="p-6">
                   <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                     <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
                       {post.category}
@@ -192,11 +175,8 @@ export const BlogPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Newsletter CTA */}
-      <section className="px-4 pb-20">
-        <div className="max-w-4xl mx-auto bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-12 text-center">
+      </section>      <section className="px-4 pb-20">
+        <div className="max-w-4xl mx-auto bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl p-12 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Subscribe to Our Newsletter
           </h2>

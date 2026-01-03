@@ -22,7 +22,7 @@ class YieldPredictionRequest(BaseModel):
 @router.post("/predict")
 @limiter.limit("50/hour")  # Allow multiple predictions for different scenarios
 async def predict_yield(request: Request, yield_request: YieldPredictionRequest):
-    """Predict crop yield based on input parameters"""
+    
     try:
         prediction = yield_service.predict_yield(
             crop=yield_request.crop,
@@ -46,7 +46,7 @@ async def predict_yield(request: Request, yield_request: YieldPredictionRequest)
 @router.get("/crops")
 @limiter.limit("200/hour")
 async def get_supported_crops(request: Request):
-    """Get list of crops supported for yield prediction"""
+    
     return {
         "crops": YieldService.get_supported_crops(),
         "total": len(YieldService.get_supported_crops())
@@ -55,7 +55,7 @@ async def get_supported_crops(request: Request):
 @router.get("/crop-info/{crop}")
 @limiter.limit("100/hour")
 async def get_crop_info(request: Request, crop: str):
-    """Get optimal conditions for a specific crop"""
+    
     crop_lower = crop.lower()
     
     if crop_lower not in YieldService.CROP_DATA:

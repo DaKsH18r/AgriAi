@@ -41,24 +41,24 @@ export function DataTable<T extends Record<string, unknown>>({
   // Filter data based on search
   const filteredData = searchable
     ? data.filter((row) => {
-        if (!searchTerm) return true;
-        return searchKeys.some((key) =>
-          String(row[key]).toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      })
+      if (!searchTerm) return true;
+      return searchKeys.some((key) =>
+        String(row[key]).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    })
     : data;
 
   // Sort data
   const sortedData = sortKey
     ? [...filteredData].sort((a, b) => {
-        const aValue = a[sortKey];
-        const bValue = b[sortKey];
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
 
-        if (aValue === bValue) return 0;
+      if (aValue === bValue) return 0;
 
-        const comparison = String(aValue) > String(bValue) ? 1 : -1;
-        return sortOrder === "asc" ? comparison : -comparison;
-      })
+      const comparison = String(aValue) > String(bValue) ? 1 : -1;
+      return sortOrder === "asc" ? comparison : -comparison;
+    })
     : filteredData;
 
   // Paginate data
@@ -81,7 +81,7 @@ export function DataTable<T extends Record<string, unknown>>({
 
   return (
     <div className="space-y-4">
-      {/* Search Bar */}
+      {" "}
       {searchable && searchKeys.length > 0 && (
         <div className="relative">
           <Search
@@ -99,9 +99,7 @@ export function DataTable<T extends Record<string, unknown>>({
             className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>
-      )}
-
-      {/* Table */}
+      )}{" "}
       <div className="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm">
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
@@ -109,9 +107,8 @@ export function DataTable<T extends Record<string, unknown>>({
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
-                  className={`px-6 py-4 text-left text-sm font-bold text-gray-700 ${
-                    column.sortable ? "cursor-pointer hover:bg-gray-100" : ""
-                  }`}
+                  className={`px-6 py-4 text-left text-sm font-bold text-gray-700 ${column.sortable ? "cursor-pointer hover:bg-gray-100" : ""
+                    }`}
                   onClick={() =>
                     column.sortable && handleSort(String(column.key))
                   }
@@ -159,9 +156,8 @@ export function DataTable<T extends Record<string, unknown>>({
                 <tr
                   key={index}
                   onClick={() => onRowClick?.(row)}
-                  className={`border-b border-gray-100 last:border-0 ${
-                    onRowClick ? "cursor-pointer hover:bg-gray-50" : ""
-                  } transition`}
+                  className={`border-b border-gray-100 last:border-0 ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""
+                    } transition`}
                 >
                   {columns.map((column) => (
                     <td
@@ -185,9 +181,7 @@ export function DataTable<T extends Record<string, unknown>>({
             )}
           </tbody>
         </table>
-      </div>
-
-      {/* Pagination */}
+      </div>{" "}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">
@@ -207,11 +201,10 @@ export function DataTable<T extends Record<string, unknown>>({
               <button
                 key={page}
                 onClick={() => handlePageChange(page)}
-                className={`px-4 py-2 rounded-lg font-semibold transition ${
-                  currentPage === page
-                    ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg"
+                className={`px-4 py-2 rounded-lg font-semibold transition ${currentPage === page
+                    ? "bg-emerald-900 text-white shadow-lg"
                     : "border border-gray-200 hover:bg-gray-50 text-gray-700"
-                }`}
+                  }`}
               >
                 {page}
               </button>

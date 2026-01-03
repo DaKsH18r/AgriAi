@@ -1,7 +1,3 @@
-"""
-Multi-Source Government Data Integration Service
-Fetches real agricultural data from multiple Indian government APIs
-"""
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
@@ -12,7 +8,6 @@ import os
 logger = logging.getLogger(__name__)
 
 class MultiSourceDataService:
-    """Integrates data from multiple government sources"""
     
     def __init__(self):
         self.api_key = os.getenv("DATA_GOV_IN_API_KEY")
@@ -62,7 +57,6 @@ class MultiSourceDataService:
         }
     
     def fetch_from_source(self, source_key: str, filters: Dict = None, limit: int = 1000) -> Optional[Dict]:
-        """Fetch data from a specific government source"""
         if source_key not in self.sources:
             logger.error(f"Unknown source: {source_key}")
             return None
@@ -87,21 +81,17 @@ class MultiSourceDataService:
             if response.status_code == 200:
                 data = response.json()
                 record_count = len(data.get('records', []))
-                logger.info(f"✅ {source_key}: {record_count} records")
+                logger.info(f"[OK] {source_key}: {record_count} records")
                 return data
             else:
-                logger.warning(f"⚠️ {source_key} returned {response.status_code}")
+                logger.warning(f"[WARNING] {source_key} returned {response.status_code}")
                 return None
                 
         except Exception as e:
-            logger.error(f"❌ {source_key} error: {str(e)}")
+            logger.error(f"[ERROR] {source_key} error: {str(e)}")
             return None
     
     def get_comprehensive_price_data(self, crop: str, days: int = 180) -> pd.DataFrame:
-        """
-        Fetch price data from multiple sources and combine
-        Priority: Current data → Historical data → Fallback
-        """
         all_data = []
         
         commodity = self.crop_mapping.get(crop.lower(), crop.title())
@@ -118,7 +108,7 @@ class MultiSourceDataService:
             df['source'] = 'agmarknet_current'
             df['date'] = pd.to_datetime(df['arrival_date'], format='%d/%m/%Y', errors='coerce')
             all_data.append(df)
-            logger.info(f"✅ Got {len(df)} records from current AGMARKNET")
+            logger.info(f"[OK] Got {len(df)} records from current AGMARKNET")
         
         # 2. Try historical dataset (if exists)
         try:
@@ -133,7 +123,7 @@ class MultiSourceDataService:
                 df_hist['source'] = 'agmarknet_historical'
                 df_hist['date'] = pd.to_datetime(df_hist['arrival_date'], format='%d/%m/%Y', errors='coerce')
                 all_data.append(df_hist)
-                logger.info(f"✅ Got {len(df_hist)} historical records")
+                logger.info(f"[OK] Got {len(df_hist)} historical records")
         except Exception as e:
             logger.info(f"No historical data available: {str(e)}")
         
@@ -152,14 +142,13 @@ class MultiSourceDataService:
             start_date = end_date - timedelta(days=days)
             combined_df = combined_df[combined_df['date'] >= start_date]
             
-            logger.info(f"📊 Combined data: {len(combined_df)} unique records from {combined_df['date'].min()} to {combined_df['date'].max()}")
+            logger.info(f"[DATA] Combined data: {len(combined_df)} unique records from {combined_df['date'].min()} to {combined_df['date'].max()}")
             
             return combined_df
         
         return pd.DataFrame()
     
     def get_msp_data(self, crop: str) -> Optional[float]:
-        """Get Minimum Support Price for crop"""
         try:
             commodity = self.crop_mapping.get(crop.lower(), crop.title())
             msp_data = self.fetch_from_source(
@@ -177,7 +166,6 @@ class MultiSourceDataService:
         return None
     
     def check_all_sources_status(self) -> Dict:
-        """Health check for all data sources"""
         status = {}
         
         for source_key, source_config in self.sources.items():

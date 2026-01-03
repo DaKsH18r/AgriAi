@@ -12,15 +12,11 @@ PRICE_PREDICTION_CACHE_TTL = 1800  # 30 minutes for predictions
 PRICE_LIST_CACHE_TTL = 3600  # 1 hour for price lists
 
 class PriceService:
-    
     # Crop list for reference
     CROPS = ["wheat", "rice", "tomato", "onion", "potato", "cotton", "sugarcane", "soyabean"]
     
     @staticmethod
     def predict_prices(crop: str, days_ahead: int = 30, use_real_data: bool = True) -> Dict:
-        """
-        Predict future prices using real data or synthetic fallback with caching
-        """
         cache_key = f"{crop}:{days_ahead}:{use_real_data}"
         
         # Try to get from cache first
@@ -83,7 +79,7 @@ class PriceService:
             # Get last 30 days for display
             recent_history = historical_df.tail(30)[['date', 'price', 'crop']].to_dict('records')
             
-            # ✅ Updated: Convert dates safely for JSON serialization
+            # [OK] Updated: Convert dates safely for JSON serialization
             for record in recent_history:
                 if isinstance(record['date'], pd.Timestamp):
                     record['date'] = record['date'].strftime('%Y-%m-%d')
@@ -130,7 +126,6 @@ class PriceService:
     
     @staticmethod
     def _get_recommendation(price_change: float) -> str:
-        """Generate selling recommendation based on price trend"""
         if price_change > 10:
             return "HOLD - Prices expected to rise significantly. Wait for better rates."
         elif price_change > 5:
@@ -144,9 +139,6 @@ class PriceService:
     
     @staticmethod
     def get_market_comparison(crop: str) -> Dict:
-        """
-        Compare prices across different mandis using real data
-        """
         try:
             logger.info(f"Getting market comparison for {crop}")
             
@@ -198,7 +190,6 @@ class PriceService:
     
     @staticmethod
     def _synthetic_market_comparison(crop: str, df: pd.DataFrame) -> Dict:
-        """Generate synthetic market comparison"""
         mandis = ["Delhi", "Mumbai", "Kolkata", "Chennai", "Bangalore", "Hyderabad"]
         
         avg_price = df['price'].mean()

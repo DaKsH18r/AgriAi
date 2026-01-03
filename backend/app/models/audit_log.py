@@ -1,4 +1,3 @@
-"""Audit Log Model for tracking admin actions"""
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
@@ -7,7 +6,6 @@ from app.database import Base
 
 
 class AuditLog(Base):
-    """Track all admin actions for security and compliance"""
     __tablename__ = "audit_logs"
 
     id = Column(Integer, primary_key=True, index=True)

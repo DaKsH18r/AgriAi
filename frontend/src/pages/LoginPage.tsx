@@ -21,8 +21,12 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get the page user was trying to access before login
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
+  interface LocationState {
+    from?: { pathname: string };
+  }
+
+  const from =
+    (location.state as LocationState)?.from?.pathname || "/dashboard";
 
   // Redirect when authentication succeeds
   React.useEffect(() => {
@@ -38,7 +42,6 @@ export const LoginPage: React.FC = () => {
 
     try {
       await login(email, password);
-      // Navigation will happen automatically via useEffect when isAuthenticated becomes true
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {
@@ -48,15 +51,14 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F7F8] flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Subtle radial highlight behind card */}
+      {" "}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-        <div className="w-[600px] h-[600px] bg-[#1B5E20]/[0.02] rounded-full blur-3xl"></div>
+        <div className="w-150 h-150 bg-[#1B5E20]/2 rounded-full blur-3xl"></div>
       </div>
-
-      <div className="max-w-[440px] w-full relative z-10">
-        {/* Card */}
+      <div className="max-w-110 w-full relative z-10">
+        {" "}
         <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-10 border border-gray-100/50">
-          {/* Logo & Header */}
+          {" "}
           <div className="text-center mb-8">
             <Link to="/" className="inline-flex items-center gap-2.5 mb-6">
               <div className="w-11 h-11 flex items-center justify-center">
@@ -70,12 +72,10 @@ export const LoginPage: React.FC = () => {
             <p className="text-gray-500 text-sm">
               Sign in to access your dashboard
             </p>
-          </div>
-
-          {/* Error Alert */}
+          </div>{" "}
           {error && (
             <div className="mb-6 p-3.5 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-red-800">
                   Login Failed
@@ -83,11 +83,9 @@ export const LoginPage: React.FC = () => {
                 <p className="text-sm text-red-600 mt-0.5">{error}</p>
               </div>
             </div>
-          )}
-
-          {/* Login Form */}
+          )}{" "}
           <form onSubmit={handleSubmit} className="space-y-4.5">
-            {/* Email Field */}
+            {" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Email Address
@@ -99,14 +97,13 @@ export const LoginPage: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-11 pr-4 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B5E20]/20 focus:border-[#1B5E20] transition-all outline-none text-gray-900 placeholder-gray-400 text-[15px]"
-                  placeholder="you@example.com"
+                  aria-label="Email address"
+                  className="w-full pl-12 pr-4 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 transition-all outline-none text-gray-900 placeholder-gray-400 text-[15px] font-normal"
+                  placeholder="your.email@mail.com"
                   disabled={loading}
                 />
               </div>
-            </div>
-
-            {/* Password Field */}
+            </div>{" "}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
                 Password
@@ -118,14 +115,16 @@ export const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  aria-label="Password"
                   minLength={6}
-                  className="w-full pl-11 pr-12 py-2.5 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B5E20]/20 focus:border-[#1B5E20] transition-all outline-none text-gray-900 placeholder-gray-400 text-[15px]"
-                  placeholder="Enter your password"
+                  className="w-full pl-12 pr-12 py-3.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-gray-50 transition-all outline-none text-gray-900 placeholder-gray-400 text-[15px] font-normal"
+                  placeholder="Password"
                   disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                   className="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   tabIndex={-1}
                 >
@@ -135,9 +134,7 @@ export const LoginPage: React.FC = () => {
                     <Eye className="w-5 h-5" />
                   )}
                 </button>
-              </div>
-
-              {/* Forgot Password Link */}
+              </div>{" "}
               <div className="flex justify-end mt-2">
                 <Link
                   to="/forgot-password"
@@ -146,13 +143,12 @@ export const LoginPage: React.FC = () => {
                   Forgot password?
                 </Link>
               </div>
-            </div>
-
-            {/* Submit Button */}
+            </div>{" "}
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-6 bg-[#1B5E20] hover:bg-[#0d3010] text-white font-semibold py-2.5 rounded-lg shadow-sm hover:shadow-md hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              aria-label="Sign in to account"
+              className="w-full mt-6 bg-emerald-900 hover:bg-emerald-800 text-white py-3.5 rounded-xl font-semibold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
@@ -166,9 +162,7 @@ export const LoginPage: React.FC = () => {
                 </>
               )}
             </button>
-          </form>
-
-          {/* Divider */}
+          </form>{" "}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-200"></div>
@@ -178,9 +172,7 @@ export const LoginPage: React.FC = () => {
                 Or continue with
               </span>
             </div>
-          </div>
-
-          {/* Google Login Button */}
+          </div>{" "}
           <button
             type="button"
             onClick={() => {
@@ -190,7 +182,7 @@ export const LoginPage: React.FC = () => {
               window.location.href = `${apiUrl.replace(
                 "/api",
                 ""
-              )}/api/auth/google/login`;
+              )}/api/v1/auth/google/login`;
             }}
             className="w-full flex items-center justify-center gap-3 px-6 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm"
             title="Google login may not work in Docker environment. Use email/password login instead."
@@ -214,9 +206,7 @@ export const LoginPage: React.FC = () => {
               />
             </svg>
             Continue with Google
-          </button>
-
-          {/* Register Link */}
+          </button>{" "}
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
@@ -228,9 +218,7 @@ export const LoginPage: React.FC = () => {
               </Link>
             </p>
           </div>
-        </div>
-
-        {/* Footer */}
+        </div>{" "}
         <p className="text-center text-xs text-gray-500 mt-6 flex items-center justify-center gap-1.5">
           <svg
             className="w-3.5 h-3.5"

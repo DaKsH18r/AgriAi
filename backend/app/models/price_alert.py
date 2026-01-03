@@ -1,4 +1,3 @@
-"""Price Alert Model"""
 from sqlalchemy import Column, String, Float, Boolean, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
@@ -9,7 +8,6 @@ from app.database import Base
 
 
 class PriceAlert(Base):
-    """Price Alert for monitoring crop prices"""
     __tablename__ = "price_alerts"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)

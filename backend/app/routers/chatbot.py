@@ -25,7 +25,7 @@ class ChatResponse(BaseModel):
 @router.post("/ask", response_model=ChatResponse)
 @limiter.limit("10/minute")  # Reduced to stay under Gemini free tier limit
 async def ask_question(request: Request, chat_request: ChatRequest):
-    """Ask the agriculture AI assistant a question"""
+    
     try:
         from datetime import datetime
         
@@ -52,7 +52,7 @@ async def ask_question(request: Request, chat_request: ChatRequest):
 @router.get("/suggestions")
 @limiter.limit("100/hour")
 async def get_suggestions(request: Request):
-    """Get suggested questions for farmers"""
+    
     return {
         "suggestions": [
             "When is the best time to plant wheat?",

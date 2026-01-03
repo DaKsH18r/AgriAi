@@ -1,7 +1,3 @@
-"""
-Scheduler service for autonomous agent operations
-Runs monitoring jobs automatically 24/7
-"""
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -12,14 +8,11 @@ logger = logging.getLogger(__name__)
 
 
 class SchedulerService:
-    """Manages automated agent tasks"""
-    
     def __init__(self):
         self.scheduler = BackgroundScheduler()
         self.is_running = False
     
     def start(self):
-        """Start autonomous monitoring"""
         if self.is_running:
             logger.warning("Scheduler already running")
             return
@@ -57,21 +50,19 @@ class SchedulerService:
         
         self.scheduler.start()
         self.is_running = True
-        logger.info("✅ Production scheduler started - monitoring 24/7")
-        logger.info("📊 Daily data collection: 6 PM IST")
-        logger.info("🌅 Daily analysis: 6 AM IST")
-        logger.info("💰 Price alerts: Every 6 hours")
+        logger.info("[OK] Production scheduler started - monitoring 24/7")
+        logger.info("[DATA] Daily data collection: 6 PM IST")
+        logger.info(" Daily analysis: 6 AM IST")
+        logger.info(" Price alerts: Every 6 hours")
     
     def stop(self):
-        """Stop the scheduler"""
         if self.scheduler.running:
             self.scheduler.shutdown()
             self.is_running = False
             logger.info("Scheduler stopped")
     
     def _daily_monitoring_job(self, smart_agent, notification_service):
-        """6 AM daily analysis"""
-        logger.info(f"🌅 Daily monitoring at {datetime.now()}")
+        logger.info(f" Daily monitoring at {datetime.now()}")
         
         try:
             alerts = smart_agent.run_daily_monitoring()
@@ -80,14 +71,13 @@ class SchedulerService:
             for alert in alerts:
                 notification_service.send_alert(alert)
             
-            logger.info(f"✅ Sent {len(alerts)} alerts")
+            logger.info(f"[OK] Sent {len(alerts)} alerts")
             
         except Exception as e:
             logger.error(f"Daily job failed: {e}")
     
     def _price_alert_job(self):
-        """Hourly price alert check"""
-        logger.info(f"💰 Price alert check at {datetime.now()}")
+        logger.info(f" Price alert check at {datetime.now()}")
         
         try:
             from app.services.alert_service import alert_service
@@ -99,16 +89,15 @@ class SchedulerService:
             result = loop.run_until_complete(alert_service.check_all_alerts())
             loop.close()
             
-            logger.info(f"✅ Alert check: {result['triggered']}/{result['checked']} triggered")
+            logger.info(f"[OK] Alert check: {result['triggered']}/{result['checked']} triggered")
             
         except Exception as e:
-            logger.error(f"❌ Price alert job failed: {str(e)}")
+            logger.error(f"[ERROR] Price alert job failed: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
     
     def _daily_data_collection_job(self):
-        """Daily market price collection from data.gov.in API"""
-        logger.info(f"📊 Daily price collection at {datetime.now()}")
+        logger.info(f"[DATA] Daily price collection at {datetime.now()}")
         
         try:
             from app.services.data_integration_service import DataIntegrationService
@@ -133,24 +122,23 @@ class SchedulerService:
                             records_count = len(processed_data)
                             total_records += records_count
                             success_count += 1
-                            logger.info(f"✅ {crop.upper()}: {records_count} records collected")
+                            logger.info(f"[OK] {crop.upper()}: {records_count} records collected")
                         else:
-                            logger.warning(f"⚠️ {crop.upper()}: No valid data")
+                            logger.warning(f"[WARNING] {crop.upper()}: No valid data")
                     else:
-                        logger.warning(f"⚠️ {crop.upper()}: No data from API")
+                        logger.warning(f"[WARNING] {crop.upper()}: No data from API")
                         
                 except Exception as e:
-                    logger.error(f"❌ {crop.upper()}: {str(e)}")
+                    logger.error(f"[ERROR] {crop.upper()}: {str(e)}")
             
-            logger.info(f"✅ Daily collection complete: {success_count}/{len(crops)} crops, {total_records} total records")
+            logger.info(f"[OK] Daily collection complete: {success_count}/{len(crops)} crops, {total_records} total records")
             
         except Exception as e:
-            logger.error(f"❌ Daily collection job failed: {str(e)}")
+            logger.error(f"[ERROR] Daily collection job failed: {str(e)}")
             import traceback
             logger.error(traceback.format_exc())
     
     def run_now(self, job_id: str):
-        """Manual trigger for testing"""
         job = self.scheduler.get_job(job_id)
         if job:
             job.func()

@@ -1,6 +1,3 @@
-"""
-Admin API endpoints - Protected with admin role
-"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
@@ -36,7 +33,7 @@ def log_admin_action(
     details: Optional[dict] = None,
     request: Optional[Request] = None
 ):
-    """Log admin action for audit trail"""
+    
     audit_log = AuditLog(
         admin_id=admin_id,
         action=action,
@@ -96,7 +93,7 @@ class AuditLogResponse(BaseModel):
 
 
 def verify_admin(current_user: User = Depends(get_current_user)):
-    """Verify user has admin privileges"""
+    
     if not current_user.is_superuser:
         raise HTTPException(
             status_code=403,
@@ -112,7 +109,6 @@ async def get_platform_stats(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Get platform statistics - admin only"""
     
     # Total users
     total_users = db.query(func.count(User.id)).scalar()
@@ -152,7 +148,6 @@ async def get_users(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Get list of users with pagination - admin only"""
     
     query = db.query(User)
     
@@ -181,7 +176,6 @@ async def update_user_status(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Activate or deactivate a user - admin only"""
     
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -228,7 +222,6 @@ async def delete_user(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Delete a user - admin only"""
     
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -269,7 +262,6 @@ async def get_system_logs(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Get recent system activity logs - admin only"""
     
     # For now, return recent analyses as activity logs
     # In production, you'd have a dedicated logs table
@@ -298,7 +290,7 @@ async def get_system_logs(
 
 @router.get("/health")
 async def admin_health_check(admin: User = Depends(verify_admin)):
-    """Health check for admin panel - verifies admin access"""
+    
     return {
         "status": "healthy",
         "admin_access": True,
@@ -308,7 +300,7 @@ async def admin_health_check(admin: User = Depends(verify_admin)):
 
 @router.get("/cache/stats")
 async def get_cache_stats(admin: User = Depends(verify_admin)):
-    """Get Redis cache statistics"""
+    
     stats = cache_manager.get_stats()
     return {
         "cache": stats,
@@ -325,7 +317,7 @@ async def clear_cache_namespace(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Clear cache for a specific namespace (weather, prices, etc.)"""
+    
     deleted = cache_manager.invalidate_pattern(namespace, pattern)
     
     # Audit log
@@ -354,7 +346,7 @@ async def clear_all_cache(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Clear entire cache (use with caution)"""
+    
     total_deleted = 0
     namespaces = ["weather:current", "weather:forecast", "prices:prediction"]
     
@@ -392,7 +384,6 @@ async def get_audit_logs(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Get audit logs of admin actions"""
     
     query = db.query(AuditLog)
     
@@ -428,7 +419,6 @@ async def get_audit_logs(
     db: Session = Depends(get_db),
     admin: User = Depends(verify_admin)
 ):
-    """Get audit logs of admin actions - admin only"""
     
     query = db.query(AuditLog)
     

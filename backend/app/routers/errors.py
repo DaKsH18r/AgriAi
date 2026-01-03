@@ -1,6 +1,3 @@
-"""
-Client-side error logging endpoint for frontend error tracking
-"""
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
@@ -13,7 +10,7 @@ router = APIRouter()
 
 
 class ClientError(BaseModel):
-    """Client error model"""
+    
     message: str
     stack: Optional[str] = None
     componentStack: Optional[str] = None
@@ -28,7 +25,6 @@ async def log_client_error(
     request: Request,
     current_user: User = Depends(get_current_user)
 ):
-    """Log client-side errors from frontend"""
     
     # Log the error with context
     logger.error(
@@ -53,7 +49,6 @@ async def log_anonymous_client_error(
     error: ClientError,
     request: Request
 ):
-    """Log client-side errors from unauthenticated users"""
     
     # Log the error without user context
     logger.error(

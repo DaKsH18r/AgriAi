@@ -1,6 +1,5 @@
-"""Weather Impact Analysis Service"""
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any
 import requests
 from app.core.config import settings
@@ -9,10 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class WeatherImpactService:
-    """
-    Service for analyzing weather impact on crops
-    Integrates real weather data with crop predictions
-    """
     
     def __init__(self):
         # Using Open-Meteo API (free, no API key required)
@@ -82,10 +77,6 @@ class WeatherImpactService:
         }
     
     async def get_weather_forecast(self, city: str, days: int = 7) -> Dict[str, Any]:
-        """
-        Get weather forecast for a city
-        Returns temperature, precipitation, and other weather parameters
-        """
         try:
             coords = self.city_coordinates.get(city.lower())
             if not coords:
@@ -111,7 +102,7 @@ class WeatherImpactService:
                 "forecast_days": days,
                 "daily": data.get("daily", {}),
                 "source": "open-meteo",
-                "fetched_at": datetime.utcnow().isoformat()
+                "fetched_at": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -119,7 +110,6 @@ class WeatherImpactService:
             return self._get_default_weather()
     
     def _get_default_weather(self) -> Dict[str, Any]:
-        """Return default/fallback weather data"""
         return {
             "city": "unknown",
             "forecast_days": 7,
@@ -129,7 +119,7 @@ class WeatherImpactService:
                 "precipitation_sum": [0] * 7,
             },
             "source": "default",
-            "fetched_at": datetime.utcnow().isoformat()
+            "fetched_at": datetime.now(timezone.utc).isoformat()
         }
     
     async def analyze_weather_impact(
@@ -138,10 +128,6 @@ class WeatherImpactService:
         city: str, 
         days: int = 7
     ) -> Dict[str, Any]:
-        """
-        Analyze weather impact on specific crop
-        Returns impact assessment and recommendations
-        """
         try:
             # Get weather forecast
             weather = await self.get_weather_forecast(city, days)
@@ -193,7 +179,7 @@ class WeatherImpactService:
                     "avg_temp_min": round(avg_temp_min, 1),
                     "total_precipitation_mm": round(total_rain, 1),
                 },
-                "analyzed_at": datetime.utcnow().isoformat()
+                "analyzed_at": datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -209,7 +195,6 @@ class WeatherImpactService:
         total_rain: float,
         days: int
     ) -> Dict[str, Any]:
-        """Calculate detailed weather impact"""
         
         recommendations = []
         impact_factors = []
@@ -289,7 +274,6 @@ class WeatherImpactService:
         }
     
     def _get_neutral_impact(self) -> Dict[str, Any]:
-        """Return neutral impact assessment"""
         return {
             "impact": "NEUTRAL",
             "severity": "low",
@@ -297,7 +281,7 @@ class WeatherImpactService:
             "message": "Normal weather conditions expected",
             "recommendations": ["Monitor weather conditions regularly"],
             "weather_summary": {},
-            "analyzed_at": datetime.utcnow().isoformat()
+            "analyzed_at": datetime.now(timezone.utc).isoformat()
         }
 
 

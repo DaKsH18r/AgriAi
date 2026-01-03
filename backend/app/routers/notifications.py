@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 from typing import List, Annotated
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -56,7 +56,7 @@ async def get_notifications(
     unread_only: bool = False,
     limit: int = 50
 ):
-    """Get user notifications"""
+    
     query = db.query(Notification).filter(Notification.user_id == current_user.id)
     
     if unread_only:
@@ -82,7 +82,7 @@ async def get_unread_count(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Session = Depends(get_db)
 ):
-    """Get count of unread notifications"""
+    
     count = db.query(Notification).filter(
         and_(
             Notification.user_id == current_user.id,
@@ -101,15 +101,15 @@ async def mark_notifications_read(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Session = Depends(get_db)
 ):
-    """Mark notifications as read"""
+    
     db.query(Notification).filter(
         and_(
-            Notification.id.in_(request.notification_ids),
+            Notification.id.in_(mark_request.notification_ids),
             Notification.user_id == current_user.id
         )
     ).update({
         "is_read": True,
-        "read_at": datetime.utcnow()
+        "read_at": datetime.now(timezone.utc)
     }, synchronize_session=False)
     
     db.commit()
@@ -124,7 +124,7 @@ async def mark_all_read(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Session = Depends(get_db)
 ):
-    """Mark all notifications as read"""
+    
     result = db.query(Notification).filter(
         and_(
             Notification.user_id == current_user.id,
@@ -132,7 +132,7 @@ async def mark_all_read(
         )
     ).update({
         "is_read": True,
-        "read_at": datetime.utcnow()
+        "read_at": datetime.now(timezone.utc)
     }, synchronize_session=False)
     
     db.commit()
@@ -148,7 +148,7 @@ async def delete_notification(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Session = Depends(get_db)
 ):
-    """Delete a notification"""
+    
     notification = db.query(Notification).filter(
         and_(
             Notification.id == notification_id,
@@ -168,30 +168,3 @@ async def delete_notification(
     return {"message": "Notification deleted"}
 
 
-@router.post("/test")
-@limiter.limit("5/hour")  # Very low limit for test endpoints
-async def create_test_notification(
-    request: Request,
-    current_user: Annotated[User, Depends(get_current_active_user)],
-    db: Session = Depends(get_db)
-):
-    """Create a test notification (for testing)"""
-    notification = Notification(
-        user_id=current_user.id,
-        type="agent_recommendation",
-        title="🌾 Test Alert: Rice Price Rising!",
-        message="Our AI agent detected that rice prices in your area are expected to increase by 12% in the next 3 days. Consider selling soon for maximum profit.",
-        priority="high",
-        extra_data=json.dumps({
-            "crop": "Rice",
-            "current_price": 2850,
-            "predicted_price": 3192,
-            "confidence": 0.87
-        })
-    )
-    
-    db.add(notification)
-    db.commit()
-    db.refresh(notification)
-    
-    return {"message": "Test notification created", "id": notification.id}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   Leaf,
   TrendingUp,
@@ -9,8 +9,9 @@ import {
 import { yieldAPI } from "../services/api";
 import type { YieldPredictionResponse } from "../services/api";
 import type { AxiosError } from "axios";
+import { logger } from "../utils/logger";
 
-export default function YieldPrediction() {
+const YieldPrediction = () => {
   const [formData, setFormData] = useState({
     crop: "wheat",
     area: 5,
@@ -57,7 +58,7 @@ export default function YieldPrediction() {
           ? err.message
           : "Failed to predict yield. Please try again.");
       setError(message);
-      console.error(err);
+      logger.error("Failed to predict yield", { error: err });
     } finally {
       setLoading(false);
     }
@@ -87,7 +88,7 @@ export default function YieldPrediction() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
+        {" "}
         <div className="mb-8">
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
             Crop Yield Prediction
@@ -96,16 +97,13 @@ export default function YieldPrediction() {
             AI-powered yield estimates based on your farming conditions
           </p>
         </div>
-
         <div className="grid lg:grid-cols-2 gap-6 sm:gap-8">
-          {/* Input Form */}
+          {" "}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-2xl font-semibold text-slate-900 mb-6 flex items-center">
               <Leaf className="mr-2 text-emerald-600" />
               Enter Your Details
-            </h2>
-
-            {/* Crop Selection */}
+            </h2>{" "}
             <div className="mb-6">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Select Crop
@@ -126,9 +124,7 @@ export default function YieldPrediction() {
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Area */}
+            </div>{" "}
             <div className="mb-4">
               <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Land Area (hectares): {formData.area}
@@ -148,9 +144,7 @@ export default function YieldPrediction() {
                 <span>0.5 ha</span>
                 <span>50 ha</span>
               </div>
-            </div>
-
-            {/* Weather Conditions */}
+            </div>{" "}
             <div className="mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
               <h3 className="text-sm font-semibold text-slate-700 mb-3">
                 Weather Conditions
@@ -189,9 +183,7 @@ export default function YieldPrediction() {
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-600"
                 />
               </div>
-            </div>
-
-            {/* Soil & Nutrients */}
+            </div>{" "}
             <div className="mb-6 p-4 bg-amber-50 rounded-lg">
               <h3 className="text-sm font-semibold text-gray-700 mb-3">
                 Soil & Nutrients
@@ -214,7 +206,7 @@ export default function YieldPrediction() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">
                     N: {formData.nitrogen}
@@ -267,9 +259,7 @@ export default function YieldPrediction() {
               <p className="text-xs text-gray-500 mt-2">
                 NPK values in kg/hectare
               </p>
-            </div>
-
-            {/* Predict Button */}
+            </div>{" "}
             <button
               onClick={handlePredict}
               disabled={loading}
@@ -287,13 +277,17 @@ export default function YieldPrediction() {
                 </>
               )}
             </button>
-          </div>
-
-          {/* Results */}
+          </div>{" "}
           <div>
             {error && (
-              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                {error}
+              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center justify-between">
+                <span>{error}</span>
+                <button
+                  onClick={handlePredict}
+                  className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
+                >
+                  Retry
+                </button>
               </div>
             )}
 
@@ -309,8 +303,8 @@ export default function YieldPrediction() {
 
             {prediction && (
               <>
-                {/* Yield Prediction Card */}
-                <div className="bg-gradient-to-br from-green-500 to-blue-500 p-8 rounded-xl shadow-lg text-white mb-6">
+                {" "}
+                <div className="bg-emerald-900 p-8 rounded-xl shadow-lg text-white mb-6">
                   <h3 className="text-2xl font-semibold mb-2">
                     Predicted Yield
                   </h3>
@@ -338,9 +332,7 @@ export default function YieldPrediction() {
                       {prediction.expected_range.max} {prediction.unit}
                     </span>
                   </div>
-                </div>
-
-                {/* Conditions Score */}
+                </div>{" "}
                 <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
                   <h3 className="text-xl font-semibold text-gray-800 mb-4">
                     Optimal Conditions Score
@@ -411,9 +403,7 @@ export default function YieldPrediction() {
                       </span>
                     </div>
                   </div>
-                </div>
-
-                {/* Recommendations */}
+                </div>{" "}
                 {prediction.recommendations.length > 0 && (
                   <div className="bg-white p-6 rounded-xl shadow-lg">
                     <h3 className="text-xl font-semibold text-gray-800 mb-4">
@@ -430,7 +420,7 @@ export default function YieldPrediction() {
                           <div className="flex items-start gap-2">
                             <AlertCircle
                               size={20}
-                              className="flex-shrink-0 mt-0.5"
+                              className="shrink-0 mt-0.5"
                             />
                             <div>
                               <p className="font-medium capitalize mb-1">
@@ -454,4 +444,6 @@ export default function YieldPrediction() {
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(YieldPrediction);

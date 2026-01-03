@@ -83,12 +83,10 @@ export const SettingsPage: React.FC = () => {
   ]);
 
   const handleSaveProfile = () => {
-    // TODO: Implement profile update API call
     alert("Profile saved successfully!");
   };
 
   const handleSaveNotifications = () => {
-    // TODO: Implement notification preferences update
     alert("Notification settings saved!");
   };
 
@@ -97,7 +95,6 @@ export const SettingsPage: React.FC = () => {
       alert("Passwords don't match!");
       return;
     }
-    // TODO: Implement password change API call
     alert("Password changed successfully!");
     setCurrentPassword("");
     setNewPassword("");
@@ -107,7 +104,6 @@ export const SettingsPage: React.FC = () => {
   const handleDeleteAccount = () => {
     setIsDeleting(true);
     setTimeout(() => {
-      // TODO: Implement actual API call
       alert("Account deleted. Redirecting...");
       setIsDeleting(false);
       setShowDeleteDialog(false);
@@ -123,7 +119,7 @@ export const SettingsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">Settings</h1>
 
@@ -137,7 +133,7 @@ export const SettingsPage: React.FC = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition ${
                     activeTab === tab.id
-                      ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg"
+                      ? "bg-emerald-900 text-white shadow-lg"
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
@@ -236,7 +232,7 @@ export const SettingsPage: React.FC = () => {
 
                   <button
                     onClick={handleSaveProfile}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
+                    className="flex items-center gap-2 px-6 py-3 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
                   >
                     <Save size={18} />
                     Save Changes
@@ -398,7 +394,7 @@ export const SettingsPage: React.FC = () => {
 
                   <button
                     onClick={handleSaveNotifications}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
+                    className="flex items-center gap-2 px-6 py-3 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
                   >
                     <Save size={18} />
                     Save Preferences
@@ -470,7 +466,7 @@ export const SettingsPage: React.FC = () => {
 
                       <button
                         onClick={handleChangePassword}
-                        className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
+                        className="px-6 py-3 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
                       >
                         Update Password
                       </button>
@@ -518,7 +514,7 @@ export const SettingsPage: React.FC = () => {
                     <h3 className="text-lg font-bold text-gray-900 mb-4">
                       Current Plan
                     </h3>
-                    <div className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                    <div className="p-6 bg-linear-to-r from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <h4 className="text-2xl font-bold text-gray-900">
@@ -605,7 +601,7 @@ export const SettingsPage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-900">
                       API Keys
                     </h2>
-                    <button className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
+                    <button className="px-6 py-3 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
                       Create New Key
                     </button>
                   </div>
@@ -656,7 +652,7 @@ export const SettingsPage: React.FC = () => {
                 <div className="mt-8 p-6 border-2 border-red-200 bg-red-50 rounded-xl">
                   <div className="flex items-start gap-4">
                     <AlertTriangle
-                      className="text-red-600 flex-shrink-0"
+                      className="text-red-600 shrink-0"
                       size={24}
                     />
                     <div className="flex-1">

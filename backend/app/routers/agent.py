@@ -1,6 +1,3 @@
-"""
-API routes for the autonomous AI agent
-"""
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -24,22 +21,6 @@ class AnalysisRequest(BaseModel):
 
 @router.post("/analyze")
 async def analyze_crop(request: AnalysisRequest):
-    """
-    Get instant crop analysis from the AI agent
-    
-    Args:
-    - crop: Crop name (wheat, rice, tomato, etc.)
-    - city: Location for weather data (default: Delhi)
-    - days: Prediction period - 7, 30, 90, or 180 days (default: 7)
-    
-    Returns:
-    - Action recommendation (SELL_NOW, WAIT, HOLD)
-    - Confidence score
-    - Detailed reasoning
-    - Best selling date
-    - Expected price
-    """
-    
     user_prefs = {
         'risk_tolerance': 'medium'  # Can be stored in user model later
     }
@@ -56,8 +37,6 @@ async def analyze_crop(request: AnalysisRequest):
 
 @router.get("/status")
 async def agent_status(db: Session = Depends(get_db)):
-    """Check if autonomous agent is running and get stats"""
-    
     # Get total analyses count
     total_analyses = db.query(func.count(AgentAnalysis.id)).scalar() or 0
     
@@ -82,10 +61,6 @@ async def agent_status(db: Session = Depends(get_db)):
 
 @router.post("/trigger-monitoring")
 async def trigger_monitoring():
-    """
-    Manually trigger daily monitoring (for testing)
-    """
-    
     scheduler_service.run_now('daily_monitoring')
     
     return {
@@ -96,7 +71,6 @@ async def trigger_monitoring():
 
 @router.get("/health")
 async def health_check():
-    """Health check for monitoring systems"""
     return {
         "agent": "healthy",
         "scheduler": "running" if scheduler_service.is_running else "stopped",
@@ -110,14 +84,6 @@ async def get_analysis_history(
     crop: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
-    """
-    Get historical analyses
-    
-    Query params:
-    - limit: Number of records (default 10, max 100)
-    - crop: Filter by crop name (optional)
-    """
-    
     limit = min(limit, 100)  # Cap at 100
     
     query = db.query(AgentAnalysis).order_by(AgentAnalysis.created_at.desc())

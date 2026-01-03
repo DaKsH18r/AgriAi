@@ -15,10 +15,8 @@ WEATHER_CACHE_TTL = 3600  # 1 hour for current weather
 FORECAST_CACHE_TTL = 7200  # 2 hours for forecasts
 
 class WeatherService:
-    
     @staticmethod
     def get_current_weather(city: str, country_code: str = "IN"):
-        """Get current weather for a city with caching"""
         cache_key = f"{city}:{country_code}"
         
         # Try to get from cache first
@@ -65,7 +63,6 @@ class WeatherService:
     
     @staticmethod
     def get_forecast(city: str, country_code: str = "IN", days: int = 5):
-        """Get weather forecast for a city with caching"""
         cache_key = f"{city}:{country_code}:{days}"
         
         # Try to get from cache first

@@ -3,13 +3,11 @@ import axios, { AxiosError } from "axios";
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
-// Configure axios with timeout and interceptors
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 60000, // 60 second timeout (agent analysis can take 30-40s)
 });
 
-// Response interceptor for better error handling
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
@@ -68,7 +66,6 @@ export interface WeatherAlerts {
   current_conditions: CurrentWeather;
 }
 
-// Weather API calls
 export const weatherAPI = {
   getCurrentWeather: async (city: string): Promise<CurrentWeather> => {
     const response = await axios.get(`${API_BASE_URL}/weather/current`, {
@@ -95,7 +92,6 @@ export const weatherAPI = {
   },
 };
 
-// Price Prediction Interfaces
 export interface HistoricalPrice {
   date: string;
   price: number;
@@ -132,7 +128,6 @@ export interface MarketComparisonData {
   price_difference: number;
 }
 
-// Price API calls
 export const priceAPI = {
   getPrediction: async (
     crop: string,
@@ -164,7 +159,6 @@ export const priceAPI = {
   },
 };
 
-// Yield Prediction Interfaces
 export interface YieldPredictionRequest {
   crop: string;
   area: number;
@@ -330,7 +324,6 @@ export const agentAPI = {
   },
 };
 
-// Notification Interfaces
 export interface Notification {
   id: number;
   type: string;

@@ -1,10 +1,3 @@
-"""add superuser field
-
-Revision ID: 002
-Revises: 001
-Create Date: 2025-11-23
-
-"""
 from alembic import op
 import sqlalchemy as sa
 

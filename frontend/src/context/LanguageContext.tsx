@@ -2,6 +2,7 @@
  * Language Context for managing multi-language support
  */
 
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState } from "react";
 import { translations } from "../i18n/translations";
 import type { Language, Translations } from "../i18n/translations";

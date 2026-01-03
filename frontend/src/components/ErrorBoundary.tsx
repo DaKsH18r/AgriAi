@@ -1,6 +1,7 @@
 import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { logger } from "../utils/logger";
 
 interface Props {
   children: ReactNode;
@@ -32,8 +33,9 @@ export class ErrorBoundary extends Component<Props, State> {
       url: window.location.href,
     };
 
-    // Send to backend error logging endpoint
-    fetch("http://localhost:8000/api/errors/client", {
+    const apiUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+    fetch(`${apiUrl.replace("/api", "")}/api/errors/client`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,13 +43,9 @@ export class ErrorBoundary extends Component<Props, State> {
       },
       body: JSON.stringify(errorData),
     }).catch((err) => {
-      // Fallback to console if API fails
-      console.error("Failed to log error to backend:", err);
-      console.error("Original error:", error, errorInfo);
+      logger.error("Failed to log error to backend", err);
+      logger.error("Original error", { error, errorInfo });
     });
-
-    // TODO: Add Sentry/LogRocket integration here
-    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
   }
 
   handleReset = () => {
@@ -62,16 +60,13 @@ export class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-red-50/30 to-orange-50/30 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-linear-to-br from-gray-50 via-red-50/30 to-orange-50/30 flex items-center justify-center p-6">
           <div className="max-w-2xl text-center animate-fadeIn">
-            {/* Error Icon */}
             <div className="mb-8 flex justify-center">
               <div className="p-6 bg-red-100 rounded-full animate-shake">
                 <AlertTriangle size={80} className="text-red-600" />
               </div>
             </div>
-
-            {/* Content */}
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Oops! Something Broke
             </h1>
@@ -79,8 +74,6 @@ export class ErrorBoundary extends Component<Props, State> {
               Don't worry, we've caught this error and our team has been
               notified.
             </p>
-
-            {/* Error Details (Development only) */}
             {this.state.error && import.meta.env.DEV && (
               <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl text-left overflow-auto">
                 <h3 className="font-bold text-red-900 mb-2">Error Details:</h3>
@@ -89,15 +82,13 @@ export class ErrorBoundary extends Component<Props, State> {
                 </pre>
               </div>
             )}
-
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
                 onClick={this.handleRefresh}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-linear-to-r from-red-500 to-orange-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition"
               >
                 <RefreshCw size={20} />
-                Reload Page
+                Refresh
               </button>
               <button
                 onClick={this.handleReset}
@@ -106,9 +97,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <Home size={20} />
                 Go Home
               </button>
-            </div>
-
-            {/* Help Text */}
+            </div>{" "}
             <div className="mt-12 pt-8 border-t border-gray-200">
               <p className="text-sm text-gray-600">
                 If this keeps happening, please{" "}

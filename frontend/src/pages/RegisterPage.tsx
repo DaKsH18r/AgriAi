@@ -76,7 +76,7 @@ export const RegisterPage: React.FC = () => {
     window.location.href = `${apiUrl.replace(
       "/api",
       ""
-    )}/api/auth/google/login`;
+    )}/api/v1/auth/google/login`;
   };
 
   const handleBlur = (field: string) => {
@@ -87,21 +87,17 @@ export const RegisterPage: React.FC = () => {
     const isInvalid = touched[field] && !value;
 
     if (isInvalid) {
-      return `w-full px-4 py-2.5 ${
-        field === "password" ? "pr-12" : ""
-      } bg-white/50 border-2 border-red-400 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-red-400 [&:focus]:shadow-none`;
+      return `w-full px-4 py-2.5 ${field === "password" ? "pr-12" : ""
+        } bg-white/50 border-2 border-red-400 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-red-400 [&:focus]:shadow-none`;
     }
 
-    return `w-full px-4 py-2.5 ${
-      field === "password" ? "pr-12" : ""
-    } bg-white/50 border-2 border-slate-300 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-emerald-500 [&:focus]:shadow-none`;
+    return `w-full px-4 py-2.5 ${field === "password" ? "pr-12" : ""
+      } bg-white/50 border-2 border-slate-300 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-emerald-500 [&:focus]:shadow-none`;
   };
 
   return (
     <div className="h-screen flex overflow-hidden relative bg-white">
-      {/* Left Panel - Marketing & Brand */}
-      <div className="hidden lg:flex lg:w-[42%] relative overflow-hidden bg-gradient-to-br from-emerald-900 to-emerald-800">
-        {/* Farm Background Image with Gradient Overlay */}
+      <div className="hidden lg:flex lg:w-[42%] relative overflow-hidden bg-linear-to-br from-emerald-900 to-emerald-800">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -110,11 +106,8 @@ export const RegisterPage: React.FC = () => {
           }}
         >
           <div className="absolute inset-0 bg-emerald-900/85"></div>
-          {/* Subtle fade at right edge */}
-          <div className="absolute inset-y-0 -right-px w-8 bg-gradient-to-r from-transparent to-emerald-900"></div>
+          <div className="absolute inset-y-0 -right-px w-8 bg-linear-to-r from-transparent to-emerald-900"></div>
         </div>
-
-        {/* Dot Pattern Overlay */}
         <div
           className="absolute inset-0 opacity-10"
           style={{
@@ -122,27 +115,18 @@ export const RegisterPage: React.FC = () => {
             backgroundSize: "24px 24px",
           }}
         ></div>
-
-        {/* Subtle glow at edge */}
-        <div className="absolute inset-y-0 right-0 w-1 bg-gradient-to-b from-transparent via-emerald-400/50 to-transparent"></div>
-
-        {/* Animated Glowing Orbs */}
+        <div className="absolute inset-y-0 right-0 w-1 bg-linear-to-b from-transparent via-emerald-400/50 to-transparent"></div>
         <div className="absolute top-20 left-20 w-64 h-64 bg-emerald-400/30 rounded-full blur-3xl animate-pulse"></div>
         <div
           className="absolute bottom-32 right-20 w-80 h-80 bg-lime-400/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "1s" }}
         ></div>
-
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-12 py-8">
-          {/* Logo */}
           <div className="mb-6">
             <div className="inline-flex items-center justify-center w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl">
               <span className="text-4xl">🌾</span>
             </div>
           </div>
-
-          {/* Headline */}
           <h1 className="text-4xl font-bold text-white mb-3 leading-tight">
             Cultivate a<br />
             Smarter Future
@@ -151,11 +135,9 @@ export const RegisterPage: React.FC = () => {
             Join thousands of farmers leveraging AI to maximize yields and
             optimize operations.
           </p>
-
-          {/* Feature List */}
           <div className="space-y-4">
             <div className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all cursor-default">
-              <div className="flex-shrink-0 w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
+              <div className="shrink-0 w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
                 <Sparkles className="w-5 h-5 text-emerald-300" />
               </div>
               <div>
@@ -170,7 +152,7 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             <div className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all cursor-default">
-              <div className="flex-shrink-0 w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
+              <div className="shrink-0 w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
                 <CloudRain className="w-5 h-5 text-emerald-300" />
               </div>
               <div>
@@ -185,7 +167,7 @@ export const RegisterPage: React.FC = () => {
             </div>
 
             <div className="group flex items-start gap-3 p-3 rounded-xl hover:bg-white/5 transition-all cursor-default">
-              <div className="flex-shrink-0 w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
+              <div className="shrink-0 w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center backdrop-blur-sm border border-emerald-400/30">
                 <TrendingUp className="w-5 h-5 text-emerald-300" />
               </div>
               <div>
@@ -201,14 +183,9 @@ export const RegisterPage: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Right Panel - Form */}
-      <div className="flex-1 lg:w-[58%] relative overflow-y-auto bg-gradient-to-br from-slate-50 to-white">
-        {/* Form Container */}
+      <div className="flex-1 lg:w-[58%] relative overflow-y-auto bg-linear-to-br from-slate-50 to-white">
         <div className="relative z-10 min-h-full flex items-center justify-center p-4 py-6">
-          {/* Clean white card */}
           <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-            {/* Header */}
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold text-slate-900 mb-1.5">
                 Create Your Account
@@ -217,16 +194,12 @@ export const RegisterPage: React.FC = () => {
                 Start your smart farming journey today
               </p>
             </div>
-
-            {/* Error Alert */}
             {error && (
               <div className="mb-4 p-3 bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
-
-            {/* Google Sign Up Button */}
             <button
               type="button"
               onClick={handleGoogleSignup}
@@ -252,8 +225,6 @@ export const RegisterPage: React.FC = () => {
               </svg>
               Sign up with Google
             </button>
-
-            {/* Divider */}
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-300"></div>
@@ -264,10 +235,7 @@ export const RegisterPage: React.FC = () => {
                 </span>
               </div>
             </div>
-
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-3.5">
-              {/* First Name & Last Name */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1.5">
@@ -300,8 +268,6 @@ export const RegisterPage: React.FC = () => {
                   />
                 </div>
               </div>
-
-              {/* Email */}
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Email
@@ -317,8 +283,6 @@ export const RegisterPage: React.FC = () => {
                   disabled={loading}
                 />
               </div>
-
-              {/* Password */}
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1.5">
                   Password
@@ -331,6 +295,7 @@ export const RegisterPage: React.FC = () => {
                     onBlur={() => handleBlur("password")}
                     required
                     minLength={8}
+                    aria-label="Password"
                     className={getInputClasses("password", password)}
                     placeholder=""
                     disabled={loading}
@@ -349,8 +314,6 @@ export const RegisterPage: React.FC = () => {
                   </button>
                 </div>
               </div>
-
-              {/* Terms Checkbox */}
               <div className="flex items-start gap-3">
                 <input
                   type="checkbox"
@@ -376,12 +339,10 @@ export const RegisterPage: React.FC = () => {
                   </Link>
                 </label>
               </div>
-
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                className="w-full bg-emerald-900 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
               >
                 {loading ? (
                   <>
@@ -396,8 +357,6 @@ export const RegisterPage: React.FC = () => {
                 )}
               </button>
             </form>
-
-            {/* Footer */}
             <div className="mt-4 text-center">
               <p className="text-xs text-slate-600">
                 Already have an account?{" "}

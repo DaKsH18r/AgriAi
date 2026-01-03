@@ -14,10 +14,6 @@ load_dotenv()
 
 
 class DataIntegrationService:
-    """
-    Production-grade data integration service with multiple fallbacks
-    """
-    
     def __init__(self):
         self.data_gov_api_key = os.getenv("DATA_GOV_IN_API_KEY")
         self.resource_id = "9ef84268-d588-465a-a308-a864a43d0070"
@@ -36,9 +32,6 @@ class DataIntegrationService:
         }
         
     def fetch_real_api_data(self, commodity: str = None, limit: int = 1000, offset: int = 0) -> Optional[Dict]:
-        """
-        Attempt to fetch real data from data.gov.in API
-        """
         try:
             # Map crop name to API commodity name (case-sensitive)
             api_commodity = None
@@ -67,40 +60,35 @@ class DataIntegrationService:
                 
                 # Check if data exists
                 if 'records' in data and len(data['records']) > 0:
-                    logger.info(f"✅ Successfully fetched {data['count']} records from API (total available: {data.get('total', 'unknown')})")
+                    logger.info(f"[OK] Successfully fetched {data['count']} records from API (total available: {data.get('total', 'unknown')})")
                     return data
                 else:
-                    logger.warning("⚠️ API returned empty data")
+                    logger.warning("[WARNING] API returned empty data")
                     return None
                     
             elif response.status_code == 502:
-                logger.error("❌ API returned 502 Bad Gateway - Server issue")
+                logger.error("[ERROR] API returned 502 Bad Gateway - Server issue")
                 return None
             elif response.status_code == 429:
-                logger.error("❌ API rate limit exceeded")
+                logger.error("[ERROR] API rate limit exceeded")
                 return None
             else:
-                logger.error(f"❌ API returned status code: {response.status_code}")
+                logger.error(f"[ERROR] API returned status code: {response.status_code}")
                 logger.error(f"Response: {response.text[:200]}")
                 return None
                 
         except requests.exceptions.Timeout:
-            logger.error("❌ API request timed out after 30 seconds")
+            logger.error("[ERROR] API request timed out after 30 seconds")
             return None
         except requests.exceptions.ConnectionError:
-            logger.error("❌ Could not connect to API server")
+            logger.error("[ERROR] Could not connect to API server")
             return None
         except Exception as e:
-            logger.error(f"❌ Unexpected error fetching API data: {str(e)}")
+            logger.error(f"[ERROR] Unexpected error fetching API data: {str(e)}")
             return None
     
     def generate_hybrid_historical_data(self, crop: str, days: int = 180, current_price: float = None) -> pd.DataFrame:
-        """
-        Generate historical data based on current real price (if available)
-        Used to backfill historical data when API only provides today's data
-        ✅ DETERMINISTIC: Each date has the same price regardless of request
-        """
-        logger.info(f"📊 Generating hybrid historical data for {crop} ({days} days, current_price={current_price})")
+        logger.info(f"[DATA] Generating hybrid historical data for {crop} ({days} days, current_price={current_price})")
         
         # Realistic price ranges per crop (per quintal)
         crop_config = {
@@ -119,12 +107,12 @@ class DataIntegrationService:
         # If we have real current price, adjust base to match reality
         if current_price:
             config["base"] = current_price
-            logger.info(f"✅ Using real current price ₹{current_price:.2f} as base for historical backfill")
+            logger.info(f"[OK] Using real current price Rs.{current_price:.2f} as base for historical backfill")
         
         dates = pd.date_range(end=datetime.now(), periods=days, freq='D')
         
         # Generate realistic price patterns
-        # ✅ Key fix: Use date-specific seed so each date gets same price every time
+        # [OK] Key fix: Use date-specific seed so each date gets same price every time
         prices = []
         for date in dates:
             # Set seed based on crop AND specific date
@@ -163,24 +151,13 @@ class DataIntegrationService:
         return df
     
     def get_price_data(self, crop: str, days: int = 180, force_synthetic: bool = False) -> pd.DataFrame:
-        """
-        Main method: Try real API, fallback to synthetic
-        
-        Args:
-            crop: Crop name
-            days: Number of days of data
-            force_synthetic: Skip API and use synthetic (for testing)
-        
-        Returns:
-            DataFrame with price data
-        """
         # Check database cache first
         db_data = self._get_from_database(crop, days)
         if db_data is not None and not db_data.empty:
             data_age_days = (datetime.now().date() - db_data['date'].max().date()).days
             
             if data_age_days < 1:  # Data is fresh (less than 1 day old)
-                logger.info(f"✅ Using cached data from database (age: {data_age_days} days)")
+                logger.info(f"[OK] Using cached data from database (age: {data_age_days} days)")
                 return db_data
         
        # Try real API first (unless forced to use synthetic)
@@ -198,13 +175,13 @@ class DataIntegrationService:
             
             if processed_data is not None and not processed_data.empty:
                     self._store_in_database(processed_data)
-                    logger.info(f"✅ Got {len(processed_data)} records from REAL API")
+                    logger.info(f"[OK] Got {len(processed_data)} records from REAL API")
                     
                     # Check if we need historical backfill (API only provides today's data)
                     unique_dates = processed_data['date'].dt.date.nunique()
                     
                     if unique_dates < days and unique_dates <= 5:  # Need historical data
-                        logger.info(f"⚠️ API provided only {unique_dates} unique dates, need {days} days")
+                        logger.info(f"[WARNING] API provided only {unique_dates} unique dates, need {days} days")
                         
                         # Get average current price from real data
                         current_avg_price = processed_data['price'].mean()
@@ -224,25 +201,24 @@ class DataIntegrationService:
                         combined_data = pd.concat([historical_data, processed_data], ignore_index=True)
                         combined_data = combined_data.sort_values('date').tail(days)
                         
-                        # ✅ Store hybrid data in database for consistency
+                        # [OK] Store hybrid data in database for consistency
                         self._store_in_database(historical_data)
                         
-                        logger.info(f"✅ Using HYBRID data: {len(historical_data)} historical + {len(processed_data)} real (today)")
+                        logger.info(f"[OK] Using HYBRID data: {len(historical_data)} historical + {len(processed_data)} real (today)")
                         return combined_data
                     else:
                         # Have enough historical data from API
                         processed_data = processed_data.sort_values('date', ascending=False).head(days)
-                        logger.info(f"✅ Using REAL API data: {len(processed_data)} records")
+                        logger.info(f"[OK] Using REAL API data: {len(processed_data)} records")
                         return processed_data
         
         # Fallback to pure synthetic (no real data available)
-        logger.warning("⚠️ No real API data available, using pure synthetic fallback")
+        logger.warning("[WARNING] No real API data available, using pure synthetic fallback")
         synthetic_data = self.generate_hybrid_historical_data(crop, days)
         
         return synthetic_data
     
     def _get_from_database(self, crop: str, days: int) -> Optional[pd.DataFrame]:
-        """Get cached data from database"""
         with get_db_session_no_commit() as db:
             end_date = datetime.now().date()
             start_date = end_date - timedelta(days=days)
@@ -269,21 +245,6 @@ class DataIntegrationService:
             return df
     
     def _process_api_data(self, api_data: Dict, crop_filter: str = None) -> Optional[pd.DataFrame]:
-        """Process raw API data into our format
-        
-        API format: {
-            "state": "Gujarat",
-            "district": "Surendranagar",
-            "market": "Dhragradhra APMC",
-            "commodity": "Tomato",
-            "variety": "Deshi",
-            "grade": "Local",
-            "arrival_date": "12/12/2025",
-            "min_price": 1850,
-            "max_price": 1850,
-            "modal_price": 1850
-        }
-        """
         try:
             if 'records' not in api_data or len(api_data['records']) == 0:
                 logger.warning("No records in API response")
@@ -330,7 +291,7 @@ class DataIntegrationService:
             # Sort by date
             processed = processed.sort_values('date')
             
-            logger.info(f"✅ Processed {len(processed)} valid records")
+            logger.info(f"[OK] Processed {len(processed)} valid records")
             return processed
             
         except Exception as e:
@@ -340,7 +301,6 @@ class DataIntegrationService:
             return None
     
     def _store_in_database(self, df: pd.DataFrame):
-        """Store processed data in database"""
         with get_db_session() as db:
             stored_count = 0
             skipped_count = 0
@@ -370,7 +330,7 @@ class DataIntegrationService:
                     skipped_count += 1
             
             # Auto-commits when context exits
-            logger.info(f"✅ Stored {stored_count} new records in database (skipped {skipped_count} duplicates)")
+            logger.info(f"[OK] Stored {stored_count} new records in database (skipped {skipped_count} duplicates)")
 
 
 # Singleton instance

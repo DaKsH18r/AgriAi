@@ -11,11 +11,8 @@ import random
 import numpy as np
 
 def generate_realistic_price_data():
-    """
-    Generate 2 years of realistic historical price data for major crops
-    """
     
-    # Crop configuration with realistic price ranges (₹ per quintal)
+    # Crop configuration with realistic price ranges (Rs. per quintal)
     crops_config = {
         "wheat": {
             "base_price": 2100,
@@ -79,7 +76,7 @@ def generate_realistic_price_data():
     start_date = datetime.now() - timedelta(days=730)
     end_date = datetime.now()
     
-    print("🌾 Generating historical price data...")
+    print(" Generating historical price data...")
     print(f"Date range: {start_date.date()} to {end_date.date()}")
     print(f"Crops: {len(crops_config)}")
     print(f"Mandis: {len(mandis)}")
@@ -88,7 +85,7 @@ def generate_realistic_price_data():
     
     with get_db_session() as db:
         for crop, config in crops_config.items():
-            print(f"\n📊 Processing {crop}...")
+            print(f"\n[DATA] Processing {crop}...")
             
             for mandi in mandis:
                 current_date = start_date
@@ -137,11 +134,11 @@ def generate_realistic_price_data():
             
             # Flush after each crop (keeps session active)
             db.flush()
-            print(f"✅ {crop.capitalize()} - Added {730 * len(mandis)} records")
+            print(f"[OK] {crop.capitalize()} - Added {730 * len(mandis)} records")
         
         # Auto-commits all records when context exits
-        print(f"\n🎉 Successfully generated {total_records:,} price records!")
-        print(f"📊 Database is ready for production use!")
+        print(f"\n Successfully generated {total_records:,} price records!")
+        print(f"[DATA] Database is ready for production use!")
 
 
 if __name__ == "__main__":
@@ -151,4 +148,4 @@ if __name__ == "__main__":
     
     generate_realistic_price_data()
     
-    print("\n✅ Database seeding completed!")
+    print("\n[OK] Database seeding completed!")

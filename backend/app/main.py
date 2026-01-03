@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from app.routers import weather, chatbot, prices, yield_prediction, agent, notifications, admin, errors, alerts, profile
+from app.routers import weather, chatbot, prices, yield_prediction, agent, notifications, admin, errors, alerts, profile, health
 from app.api.v1.endpoints import auth
 from app.services.scheduler_service import scheduler_service
 from app.database import init_db
@@ -19,6 +19,11 @@ from app.core.security_middleware import (
 from app.core.logging_config import logger
 from app.core.error_tracking import ErrorTrackingMiddleware
 from app.core.cache import cache_manager
+from app.core.exceptions import AgriAIException
+from app.core.request_id_middleware import RequestIDMiddleware
+from app.core.performance_middleware import PerformanceMonitoringMiddleware
+from fastapi.responses import JSONResponse
+import traceback
 
 # Validate environment variables before anything else
 validate_environment()
@@ -42,6 +47,21 @@ app.add_middleware(ErrorTrackingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(InputValidationMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware)
+
+# HTTPS Enforcement for Production
+if settings.ENVIRONMENT == "production":
+    from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
+    app.add_middleware(HTTPSRedirectMiddleware)
+    logger.info("[SECURE] HTTPS enforcement enabled - all HTTP requests will redirect to HTTPS")
+
+# Request ID Middleware for distributed tracing
+app.add_middleware(RequestIDMiddleware)
+logger.info(" Request ID middleware enabled for distributed tracing")
+
+# Performance Monitoring Middleware
+app.add_middleware(PerformanceMonitoringMiddleware)
+logger.info("[DATA] Performance monitoring middleware enabled")
+
 
 # IMPORTANT: SessionMiddleware must be added BEFORE CORSMiddleware for OAuth to work
 app.add_middleware(
@@ -71,8 +91,72 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(AgriAIException)
+async def agri_ai_exception_handler(request: Request, exc: AgriAIException):
+    from app.core.request_id_middleware import get_request_id
+    
+    # Log the error with context
+    logger.error(
+        f"{exc.error_code}: {exc.message}",
+        extra={
+            "error_code": exc.error_code,
+            "status_code": exc.status_code,
+            "path": request.url.path,
+            "method": request.method,
+            "request_id": get_request_id(),
+            "details": exc.details
+        }
+    )
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.to_dict()
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """
+    Handle unexpected exceptions with error tracking.
+    
+    Logs full traceback for debugging but returns generic message to user.
+    This prevents exposing internal implementation details.
+    """
+    from app.core.request_id_middleware import get_request_id
+    
+    # Log full traceback for debugging
+    logger.critical(
+        f"Unhandled exception: {str(exc)}",
+        exc_info=True,
+        extra={
+            "path": request.url.path,
+            "method": request.method,
+            "request_id": get_request_id(),
+            "exception_type": type(exc).__name__,
+            "traceback": traceback.format_exc()
+        }
+    )
+    
+    # Don't expose internal errors to users in production
+    if settings.ENVIRONMENT == "production":
+        message = "An unexpected error occurred. Please try again later."
+    else:
+        message = f"Internal error: {str(exc)}"
+    
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": {
+                "code": "INTERNAL_ERROR",
+                "message": message,
+                "request_id": get_request_id()
+            }
+        }
+    )
+
 # Include routers
-app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(weather.router, prefix="/api/weather", tags=["Weather"])
 app.include_router(chatbot.router, prefix="/api/chatbot", tags=["Chatbot"])
 app.include_router(prices.router, prefix="/api/prices", tags=["Prices"])
@@ -83,36 +167,48 @@ app.include_router(alerts.router, prefix="/api/alerts", tags=["Price Alerts"])  
 app.include_router(profile.router, prefix="/api/profile", tags=["User Profile"])  # NEW: User profiles
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])  # Admin panel
 app.include_router(errors.router, prefix="/api/errors", tags=["Error Tracking"])  # Client error logging
+app.include_router(health.router, prefix="/api", tags=["Health"])  # Health & monitoring endpoints
 
 
 @app.on_event("startup")
 async def startup_event():
-    """Start the autonomous agent scheduler on application startup"""
-    logger.info("🚀 Starting Agriculture AI Platform with Autonomous Agent...")
+    logger.info("Starting Agriculture AI Platform with Autonomous Agent...")
     
     try:
         # Initialize database tables
         init_db()
-        logger.info("✅ Database initialized successfully")
+        logger.info("Database initialized successfully")
         
-        # Start scheduler
-        scheduler_service.start()
-        logger.info("✅ Autonomous monitoring active! Agent running 24/7")
+        # Start scheduler if not in testing
+        if settings.ENVIRONMENT != "testing":
+            try:
+                setup_scheduler(get_app_session)
+                logger.info("Autonomous agent scheduler started successfully")
+                logger.info("Background jobs configured:")
+                logger.info("  - Price monitoring: Running continuously")
+                logger.info("  - Daily data collection: 6:00 PM IST")
+                logger.info("  - Alert processing: Every 5 minutes")
+            except Exception as scheduler_error:
+                logger.error(f"Failed to start scheduler: {str(scheduler_error)}")
+        else:
+            logger.info("Scheduler disabled in testing environment")
+            
     except Exception as e:
-        logger.error("❌ Failed to start application", exc_info=e)
+        logger.error(f"Startup error: {str(e)}")
         raise
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Stop the scheduler on application shutdown"""
     try:
-        scheduler_service.stop()
-        logger.info("👋 Agent stopped gracefully")
-        
-        # Close cache connection
-        cache_manager.close()
-        logger.info("Cache connection closed")
+        if settings.ENVIRONMENT != "testing":
+            logger.info("Shutting down autonomous agent scheduler...")
+            shutdown_scheduler()
+            logger.info("Scheduler shutdown complete")
+            
+            # Close cache connection
+            cache_manager.close()
+            logger.info("Cache connection closed")
     except Exception as e:
         logger.error("Error during shutdown", exc_info=e)
 

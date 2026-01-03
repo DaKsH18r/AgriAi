@@ -1,85 +1,124 @@
 import os
-import re
-import google.generativeai as genai
+import logging
+from typing import Optional, List, Dict
 from dotenv import load_dotenv
-from app.services.agent_service import smart_agent
+from groq import Groq
 
+# Setup logging
+logger = logging.getLogger(__name__)
+
+# Load environment variables
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
+# Get API key from settings or environment
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 
 class ChatbotService:
     
-    def __init__(self):
-        # Configure the model
-        self.model = genai.GenerativeModel('gemini-flash-latest')
-        
-        # System prompt for agriculture context
-        self.system_context = """
-        You are an expert agricultural assistant helping farmers in India. 
-        You provide practical, helpful advice on:
-        - Crop selection and planting times
-        - Pest and disease management
-        - Soil health and fertilizers
-        - Irrigation and water management
-        - Weather-based farming decisions
-        - Market prices and selling strategies
-        - Organic farming methods
-        
-        Keep responses:
-        - Simple and easy to understand
-        - Practical and actionable
-        - Specific to Indian farming conditions
-        - Under 200 words unless detailed explanation needed
-        
-        If asked about weather, remind them to check the weather dashboard.
-        If asked about prices, mention the price prediction feature.
-        """
+    # Model configuration
+    MODEL = "llama-3.3-70b-versatile"
+    MAX_TOKENS = 500
+    TEMPERATURE = 0.7
     
-    def get_response(self, user_message: str, chat_history: list = None) -> str:
-        """Get chatbot response for user message"""
+    # System prompt for agriculture context
+    SYSTEM_PROMPT = """You are an expert agricultural assistant helping farmers in India. 
+You provide practical, helpful advice on:
+- Crop selection and planting times
+- Pest and disease management
+- Soil health and fertilizers
+- Irrigation and water management
+- Weather-based farming decisions
+- Market prices and selling strategies
+- Organic farming methods
+
+Keep responses:
+- Simple and easy to understand
+- Practical and actionable
+- Specific to Indian farming conditions
+- Under 200 words unless detailed explanation needed
+
+If asked about weather, remind them to check the weather dashboard.
+If asked about prices, mention the price prediction feature."""
+
+    def __init__(self):
+        if not GROQ_API_KEY:
+            logger.warning("GROQ_API_KEY not set. Chatbot will not function.")
+            self.client = None
+        else:
+            self.client = Groq(api_key=GROQ_API_KEY)
+            logger.info("ChatbotService initialized with Groq API")
+    
+    def _is_available(self) -> bool:
+        return self.client is not None
+    
+    def get_response(self, user_message: str, chat_history: Optional[List[Dict]] = None) -> str:
+        if not self._is_available():
+            return "⚠️ Chatbot is not configured. Please contact the administrator to set up GROQ_API_KEY."
+        
         try:
-            # Combine system context with user message
-            full_prompt = f"{self.system_context}\n\nUser Question: {user_message}\n\nAssistant:"
-            
-            # Generate response
-            response = self.model.generate_content(full_prompt)
-            
-            return response.text
+            response = self.client.chat.completions.create(
+                model=self.MODEL,
+                messages=[
+                    {"role": "system", "content": self.SYSTEM_PROMPT},
+                    {"role": "user", "content": user_message}
+                ],
+                max_tokens=self.MAX_TOKENS,
+                temperature=self.TEMPERATURE
+            )
+            return response.choices[0].message.content
             
         except Exception as e:
-            error_msg = str(e)
-            if "429" in error_msg or "quota" in error_msg.lower():
-                return "⚠️ The AI assistant is temporarily busy due to high demand. Please wait a minute and try again. This happens when many farmers are using the service at once."
-            return f"Sorry, I encountered an error: {error_msg}. Please try again."
+            return self._handle_error(e)
     
-    def get_response_with_history(self, user_message: str, chat_history: list) -> str:
-        """Get response with conversation history for context"""
+    def get_response_with_history(self, user_message: str, chat_history: List[Dict]) -> str:
+        if not self._is_available():
+            return "⚠️ Chatbot is not configured. Please contact the administrator."
+        
         try:
-            # Start a chat session
-            chat = self.model.start_chat(history=[])
-            
-            # Add system context as first message
-            chat.send_message(self.system_context)
+            messages = [{"role": "system", "content": self.SYSTEM_PROMPT}]
             
             # Add previous messages from history
-            for msg in chat_history:
-                if msg['role'] == 'user':
-                    chat.send_message(msg['content'])
+            for msg in chat_history[-10:]:  # Limit to last 10 messages
+                messages.append({
+                    "role": msg.get('role', 'user'),
+                    "content": msg.get('content', '')
+                })
             
-            # Send current message
-            response = chat.send_message(user_message)
+            # Add current message
+            messages.append({"role": "user", "content": user_message})
             
-            return response.text
+            response = self.client.chat.completions.create(
+                model=self.MODEL,
+                messages=messages,
+                max_tokens=self.MAX_TOKENS,
+                temperature=self.TEMPERATURE
+            )
+            return response.choices[0].message.content
             
         except Exception as e:
-            error_msg = str(e)
-            if "429" in error_msg or "quota" in error_msg.lower():
-                return "⚠️ The AI assistant is temporarily busy due to high demand. Please wait a minute and try again. This happens when many farmers are using the service at once."
-            return f"Sorry, I encountered an error: {error_msg}. Please try again."
+            return self._handle_error(e)
+    
+    def _handle_error(self, error: Exception) -> str:
+        error_msg = str(error).lower()
+        logger.error(f"Chatbot error: {error}")
         
-""" -->Configures Gemini AI with your API key
--->Sets up agriculture-specific system prompt
--->Provides functions to get chatbot responses
--->Handles conversation history """
+        if "429" in error_msg or "rate" in error_msg:
+            return "⏳ The AI assistant is busy due to high demand. Please wait a minute and try again."
+        elif "401" in error_msg or "invalid" in error_msg:
+            return "🔑 Authentication error. Please contact the administrator."
+        elif "timeout" in error_msg:
+            return "⏱️ Request timed out. Please try again."
+        else:
+            return f"❌ Sorry, I encountered an error. Please try again later."
+
+
+# Singleton instance
+_chatbot_service: Optional[ChatbotService] = None
+
+
+def get_chatbot_service() -> ChatbotService:
+    global _chatbot_service
+    if _chatbot_service is None:
+        _chatbot_service = ChatbotService()
+    return _chatbot_service

@@ -1,0 +1,170 @@
+# AgriAI Platform
+
+AgriAI is a smart agriculture platform designed to help Indian farmers make better decisions using AI-powered insights, weather data, and market price predictions.
+
+The platform combines real-time data with machine learning models to support crop planning, pricing decisions, and yield forecasting.
+
+# Features
+
+AI Crop Advisor
+Provides intelligent sell or hold recommendations based on market trends and forecasts.
+
+Weather Dashboard
+Displays real-time weather data with insights tailored for farming decisions.
+
+Market Price Predictions
+Shows 7-day price forecasts for major crops using historical and live data.
+
+Yield Forecasting
+Estimates expected harvest output based on soil, weather, and crop data.
+
+Smart Alerts
+Notifies users when market prices reach predefined targets.
+
+AI Chatbot
+Allows farmers to ask agriculture-related questions at any time.
+
+# Tech Stack
+
+Backend
+FastAPI, PostgreSQL, SQLAlchemy, Pydantic
+
+Frontend
+React, TypeScript, Vite, TailwindCSS
+
+AI Services
+Google Gemini, Groq
+
+External APIs
+OpenWeatherMap, Data.gov.in
+
+# Project Structure
+
+```
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── models/
+│   │   └── services/
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   └── pages/
+│   └── Dockerfile
+├── docker-compose.yml
+└── docker-compose.prod.yml
+```
+
+# Requirements
+
+For local development without Docker:
+
+* Python 3.11 or higher
+* Node.js 20 or higher
+* PostgreSQL 15 or higher
+
+# Local Development Setup
+
+# Backend
+
+```
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload
+```
+
+The backend server will run at [http://localhost:8000](http://localhost:8000)
+
+# Frontend
+
+```
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend application will run at [http://localhost:5173](http://localhost:5173)
+
+# Docker Setup
+
+Docker is the recommended way to run the full stack.
+
+# Development
+
+```
+docker-compose up -d
+```
+
+# Production
+
+```
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+The production setup disables hot reload and is intended to be used behind a reverse proxy with HTTPS enabled.
+
+# Configuration
+
+Create a `.env` file inside the backend directory.
+
+```
+DATABASE_URL=postgresql://user:password@localhost:5432/agri_ai
+SECRET_KEY=replace-with-a-secure-secret
+
+GEMINI_API_KEY=your-key
+GROQ_API_KEY=your-key
+
+OPENWEATHER_API_KEY=your-key
+
+GOOGLE_CLIENT_ID=your-id
+GOOGLE_CLIENT_SECRET=your-secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/v1/auth/google/callback
+FRONTEND_URL=http://localhost:5173
+```
+
+Do not commit the `.env` file to version control.
+Use a `.env.example` file for reference instead.
+
+To generate a secure secret key:
+
+```
+python -c "import secrets; print(secrets.token_urlsafe(64))"
+```
+
+# Database Notes
+
+When using Docker, PostgreSQL is managed automatically by Docker Compose.
+
+For local development without Docker, ensure PostgreSQL is running and accessible using the credentials provided in the environment variables.
+
+# Running Tests
+
+Backend tests:
+
+```
+cd backend
+pytest
+```
+
+Frontend tests:
+
+```
+cd frontend
+npm test
+```
+
+# Deployment Notes
+
+* Use the production Docker Compose file
+* Set environment variables securely on the server
+* Run the application behind Nginx or a cloud load balancer
+* Ensure HTTPS is enabled
+* Use strong secrets and production API keys
+
+# License
+
+MIT License

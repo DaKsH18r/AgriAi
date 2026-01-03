@@ -19,6 +19,8 @@ import {
   Twitter,
   Linkedin,
   Github,
+  Menu,
+  X,
 } from "lucide-react";
 
 export const LandingPage: React.FC = () => {
@@ -42,6 +44,7 @@ export const LandingPage: React.FC = () => {
   // Track dropdown states
   const [productsOpen, setProductsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Smooth scroll behavior
@@ -80,14 +83,12 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Skip to Content Link for Accessibility */}
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-6 focus:py-3 bg-[#1B5E20] text-white font-semibold rounded-lg shadow-lg"
       >
         Skip to main content
       </a>
-
       <style
         dangerouslySetInnerHTML={{
           __html: `
@@ -107,22 +108,18 @@ export const LandingPage: React.FC = () => {
         `,
         }}
       />
-
-      {/* Navigation */}
       <nav
-        className={`fixed top-0 w-full bg-white border-b border-[#DDE2E0] z-50 transition-all duration-300 ${
-          isScrolled ? "shadow-[0_2px_8px_rgba(0,0,0,0.05)]" : ""
-        }`}
+        className={`fixed top-0 w-full bg-white border-b border-[#DDE2E0] z-50 transition-all duration-300 ${isScrolled ? "shadow-[0_2px_8px_rgba(0,0,0,0.05)]" : ""
+          }`}
         role="navigation"
         aria-label="Main navigation"
       >
         <div className="max-w-7xl mx-auto px-6">
           <div
-            className={`flex items-center justify-between transition-all duration-300 ${
-              isScrolled ? "h-16" : "h-20"
-            }`}
+            className={`flex items-center justify-between transition-all duration-300 ${isScrolled ? "h-16" : "h-20"
+              }`}
           >
-            {/* Logo Section - Clean Enterprise */}
+            {" "}
             <Link to="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 flex items-center justify-center transition-all">
                 <span className="text-2xl">🌾</span>
@@ -135,11 +132,9 @@ export const LandingPage: React.FC = () => {
                   Smart Farming Platform
                 </span>
               </div>
-            </Link>
-
-            {/* Center Navigation - Clean Pills */}
+            </Link>{" "}
             <div className="hidden lg:flex items-center gap-1 bg-[#F4F6F5] rounded-full px-2 py-2">
-              {/* Products Dropdown */}
+              {" "}
               <div
                 className="relative"
                 onMouseEnter={() => setProductsOpen(true)}
@@ -149,9 +144,8 @@ export const LandingPage: React.FC = () => {
                   Products
                   <ChevronDown
                     size={14}
-                    className={`transition-transform duration-200 ${
-                      productsOpen ? "rotate-180" : ""
-                    }`}
+                    className={`transition-transform duration-200 ${productsOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
                 {productsOpen && (
@@ -223,33 +217,25 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 )}
-              </div>
-
-              {/* Features Link */}
+              </div>{" "}
               <a
                 href="#features"
-                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${
-                  activeSection === "features"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-700 hover:text-gray-900 hover:bg-white"
-                }`}
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${activeSection === "features"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-white"
+                  }`}
               >
                 Features
-              </a>
-
-              {/* Pricing Link */}
+              </a>{" "}
               <a
                 href="#pricing"
-                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${
-                  activeSection === "pricing"
-                    ? "bg-white text-gray-900 shadow-sm"
-                    : "text-gray-700 hover:text-gray-900 hover:bg-white"
-                }`}
+                className={`px-4 py-2 text-sm font-medium rounded-full transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-1 ${activeSection === "pricing"
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-700 hover:text-gray-900 hover:bg-white"
+                  }`}
               >
                 Pricing
-              </a>
-
-              {/* Resources Dropdown */}
+              </a>{" "}
               <div
                 className="relative"
                 onMouseEnter={() => setResourcesOpen(true)}
@@ -259,9 +245,8 @@ export const LandingPage: React.FC = () => {
                   Resources
                   <ChevronDown
                     size={14}
-                    className={`transition-transform duration-200 ${
-                      resourcesOpen ? "rotate-180" : ""
-                    }`}
+                    className={`transition-transform duration-200 ${resourcesOpen ? "rotate-180" : ""
+                      }`}
                   />
                 </button>
                 {resourcesOpen && (
@@ -296,10 +281,8 @@ export const LandingPage: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* Right CTA Section - Clean */}
-            <div className="flex items-center gap-3">
+            </div>{" "}
+            <div className="hidden md:flex items-center gap-3">
               <Link
                 to="/login"
                 className="px-5 py-2 text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:rounded-lg"
@@ -317,21 +300,40 @@ export const LandingPage: React.FC = () => {
                 />
               </Link>
             </div>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
-      </nav>
-
-      {/* Hero Section */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-gray-200 bg-white">
+            <div className="px-4 py-4 space-y-3">
+              <a href="#features" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Features</a>
+              <a href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Pricing</a>
+              <Link to="/docs" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Documentation</Link>
+              <Link to="/blog" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Blog</Link>
+              <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="block px-4 py-2 text-gray-700 hover:bg-gray-50 rounded-lg font-medium">Contact</Link>
+              <div className="border-t border-gray-200 pt-3 mt-3 space-y-2">
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="block w-full text-center px-4 py-2.5 text-gray-700 font-semibold border border-gray-300 rounded-full hover:bg-gray-50">Sign In</Link>
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)} className="block w-full text-center px-4 py-2.5 bg-[#1B5E20] text-white font-semibold rounded-full hover:bg-[#124218]">Get Started</Link>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>{" "}
       <section
         id="main-content"
-        className="relative min-h-[100vh] flex items-center overflow-hidden bg-[#f5fdf8] pt-[calc(80px+4rem)] pb-40"
+        className="relative min-h-screen flex items-center overflow-hidden bg-[#f5fdf8] pt-36 pb-40"
         role="main"
         aria-label="Hero section"
       >
-        {/* Background Container - Full Width */}
+        {" "}
         <div className="absolute inset-0 w-full h-full">
-          {/* Background Image - Full width, bottom aligned, extends below viewport */}
-          {/* Responsive WebP images with fallback - 90% smaller than original PNG */}
+          {" "}
           <picture>
             <source
               media="(max-width: 480px)"
@@ -361,12 +363,8 @@ export const LandingPage: React.FC = () => {
               fetchPriority="high"
               decoding="async"
             />
-          </picture>
-
-          {/* Light Overlay */}
-          <div className="absolute inset-0 bg-[#F4F6F5]/80"></div>
-
-          {/* Pattern Overlay */}
+          </picture>{" "}
+          <div className="absolute inset-0 bg-[#F4F6F5]/80"></div>{" "}
           <div
             className="absolute inset-0"
             style={{
@@ -376,17 +374,15 @@ export const LandingPage: React.FC = () => {
             }}
           ></div>
         </div>
-
         <div className="max-w-7xl mx-auto text-center w-full relative z-10 px-4">
           <div className="animate-fadeIn">
-            {/* Trust Badge */}
+            {" "}
             <div className="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm border border-gray-200 px-4 py-2 rounded-full shadow-sm mb-8">
               <span className="text-lg">🌱</span>
               <span className="text-sm font-semibold text-gray-700">
                 Trusted by 10,000+ farmers worldwide
               </span>
             </div>
-
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6">
               The AI Platform
               <span className="block mt-2 text-[#1B5E20]">for Agriculture</span>
@@ -401,7 +397,7 @@ export const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
               <Link
                 to="/register"
-                className="group bg-[#1B5E20] hover:bg-[#124218] text-white px-8 py-3.5 rounded-lg font-semibold text-base shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2"
+                className="group bg-[#1B5E20] hover:bg-[#124218] text-white px-8 py-3.5 rounded-lg font-semibold text-base shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)] transform hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2 min-w-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2"
               >
                 Schedule Demo
                 <ArrowRight
@@ -411,13 +407,11 @@ export const LandingPage: React.FC = () => {
               </Link>
               <Link
                 to="/features"
-                className="bg-transparent text-gray-900 px-8 py-3.5 rounded-lg font-semibold text-base hover:bg-white/50 transform hover:-translate-y-0.5 transition-all duration-300 border-2 border-gray-300 hover:border-[#1B5E20] min-w-[200px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2"
+                className="bg-transparent text-gray-900 px-8 py-3.5 rounded-lg font-semibold text-base hover:bg-white/50 transform hover:-translate-y-0.5 transition-all duration-300 border-2 border-gray-300 hover:border-[#1B5E20] min-w-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B5E20] focus-visible:ring-offset-2"
               >
                 Explore Platform
               </Link>
-            </div>
-
-            {/* Stats Bar */}
+            </div>{" "}
             <div className="flex flex-wrap justify-center items-center gap-8 text-center">
               <div className="flex items-center gap-2">
                 <CheckCircle size={20} className="text-[#1B5E20]" />
@@ -440,9 +434,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* Features Section */}
+      </section>{" "}
       <section id="features" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -455,7 +447,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Feature Cards */}
+            {" "}
             {[
               {
                 icon: Brain,
@@ -508,7 +500,7 @@ export const LandingPage: React.FC = () => {
             ].map((feature, idx) => (
               <div
                 key={idx}
-                className="group bg-white rounded-lg p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] border border-gray-100 hover:border-[#1B5E20] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-300 min-h-[280px] flex flex-col"
+                className="group bg-white rounded-lg p-8 shadow-[0_1px_3px_rgba(0,0,0,0.04)] border border-gray-100 hover:border-[#1B5E20] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] transition-all duration-300 min-h-70 flex flex-col"
               >
                 <div
                   className={`w-14 h-14 ${feature.bgColor} rounded-lg flex items-center justify-center mb-6 transition-all duration-300 group-hover:scale-110`}
@@ -529,9 +521,7 @@ export const LandingPage: React.FC = () => {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* Pricing Section */}
+      </section>{" "}
       <section id="pricing" className="py-20 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -540,16 +530,13 @@ export const LandingPage: React.FC = () => {
             </h2>
             <p className="text-xl text-gray-600 mb-8">
               Choose the plan that's right for you
-            </p>
-
-            {/* Billing Toggle */}
+            </p>{" "}
             <div className="flex items-center justify-center gap-4 mb-6">
               <span
-                className={`text-base font-medium transition-colors ${
-                  billingPeriod === "monthly"
-                    ? "text-gray-900"
-                    : "text-gray-500"
-                }`}
+                className={`text-base font-medium transition-colors ${billingPeriod === "monthly"
+                  ? "text-gray-900"
+                  : "text-gray-500"
+                  }`}
               >
                 Monthly
               </span>
@@ -575,9 +562,8 @@ export const LandingPage: React.FC = () => {
                 />
               </button>
               <span
-                className={`text-base font-medium transition-colors ${
-                  billingPeriod === "annual" ? "text-gray-900" : "text-gray-500"
-                }`}
+                className={`text-base font-medium transition-colors ${billingPeriod === "annual" ? "text-gray-900" : "text-gray-500"
+                  }`}
               >
                 Annual
               </span>
@@ -588,38 +574,30 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Free Plan */}
+            {" "}
             <div className="bg-white rounded-2xl p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300">
-              {/* Icon Box */}
+              {" "}
               <div className="w-14 h-14 bg-[#F6F7F8] rounded-2xl flex items-center justify-center mb-6">
                 <span className="text-2xl">🌱</span>
-              </div>
-
-              {/* Title & Subtitle */}
+              </div>{" "}
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Free</h3>
               <p className="text-base text-gray-600 mb-6">
                 For individual farmers
-              </p>
-
-              {/* Price */}
+              </p>{" "}
               <div className="mb-8">
                 <div className="flex items-baseline gap-1 mb-8">
                   <span className="text-5xl font-bold text-gray-900">$0</span>
                   <span className="text-gray-600 text-lg">
                     /{billingPeriod === "monthly" ? "month" : "year"}
                   </span>
-                </div>
-
-                {/* CTA Button */}
+                </div>{" "}
                 <Link
                   to="/register"
                   className="block w-full text-center bg-white border-2 border-gray-300 text-gray-900 px-6 py-3 rounded-xl font-semibold hover:border-gray-400 hover:bg-gray-50 transition-all duration-200"
                 >
                   Get Started
                 </Link>
-              </div>
-
-              {/* Features */}
+              </div>{" "}
               <div className="space-y-3 pt-6 border-t border-gray-100">
                 {[
                   "1 Field",
@@ -630,36 +608,28 @@ export const LandingPage: React.FC = () => {
                   <div key={idx} className="flex items-start gap-3">
                     <CheckCircle
                       size={18}
-                      className="text-gray-400 mt-0.5 flex-shrink-0"
+                      className="text-gray-400 mt-0.5 shrink-0"
                       strokeWidth={2}
                     />
                     <span className="text-gray-700 text-[15px]">{item}</span>
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Pro Plan */}
+            </div>{" "}
             <div className="bg-white rounded-2xl p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border-2 border-[#1B5E20] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300 relative">
-              {/* Most Popular Badge */}
+              {" "}
               <div className="absolute top-6 right-6">
                 <span className="bg-[#E8F5E9] text-[#1B5E20] text-xs font-semibold px-3 py-1.5 rounded-full border border-[#1B5E20]/20">
                   Most Popular
                 </span>
-              </div>
-
-              {/* Icon Box */}
+              </div>{" "}
               <div className="w-14 h-14 bg-[#1B5E20] rounded-2xl flex items-center justify-center mb-6">
                 <span className="text-2xl">🚀</span>
-              </div>
-
-              {/* Title & Subtitle */}
+              </div>{" "}
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Pro</h3>
               <p className="text-base text-gray-600 mb-6">
                 For professional farmers
-              </p>
-
-              {/* Price */}
+              </p>{" "}
               <div className="mb-8">
                 <div className="flex items-baseline gap-1 mb-2">
                   <span className="text-5xl font-bold text-gray-900">
@@ -674,9 +644,7 @@ export const LandingPage: React.FC = () => {
                     $23.25/month billed annually
                   </p>
                 )}
-                {billingPeriod === "monthly" && <div className="mb-6" />}
-
-                {/* CTA Button */}
+                {billingPeriod === "monthly" && <div className="mb-6" />}{" "}
                 <Link
                   to="/register"
                   className="block w-full text-center bg-[#1B5E20] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#0d3010] transition-all duration-200 shadow-md hover:shadow-lg"
@@ -686,9 +654,7 @@ export const LandingPage: React.FC = () => {
                 <p className="text-xs text-gray-500 text-center mt-3">
                   14-day free trial • No credit card required
                 </p>
-              </div>
-
-              {/* Features */}
+              </div>{" "}
               <div className="space-y-3 pt-6 border-t border-gray-100">
                 {[
                   "Unlimited fields",
@@ -701,29 +667,23 @@ export const LandingPage: React.FC = () => {
                   <div key={idx} className="flex items-start gap-3">
                     <CheckCircle
                       size={18}
-                      className="text-[#1B5E20] mt-0.5 flex-shrink-0"
+                      className="text-[#1B5E20] mt-0.5 shrink-0"
                       strokeWidth={2}
                     />
                     <span className="text-gray-700 text-[15px]">{item}</span>
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Team Plan */}
+            </div>{" "}
             <div className="bg-white rounded-2xl p-7 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)] transition-all duration-300">
-              {/* Icon Box */}
+              {" "}
               <div className="w-14 h-14 bg-[#F6F7F8] rounded-2xl flex items-center justify-center mb-6">
                 <span className="text-2xl">👥</span>
-              </div>
-
-              {/* Title & Subtitle */}
+              </div>{" "}
               <h3 className="text-2xl font-bold text-gray-900 mb-2">Team</h3>
               <p className="text-base text-gray-600 mb-6">
                 For agribusiness teams
-              </p>
-
-              {/* Price */}
+              </p>{" "}
               <div className="mb-8">
                 <div className="flex items-baseline gap-1 mb-8">
                   <span className="text-5xl font-bold text-gray-900">
@@ -737,18 +697,14 @@ export const LandingPage: React.FC = () => {
                   <p className="text-sm text-gray-500 mb-8">
                     $79.17/month billed annually
                   </p>
-                )}
-
-                {/* CTA Button */}
+                )}{" "}
                 <Link
                   to="/contact"
                   className="block w-full text-center bg-white border-2 border-[#1B5E20] text-[#1B5E20] px-6 py-3 rounded-xl font-semibold hover:bg-[#E8F5E9] transition-all duration-200"
                 >
                   Contact Sales
                 </Link>
-              </div>
-
-              {/* Features */}
+              </div>{" "}
               <div className="space-y-3 pt-6 border-t border-gray-100">
                 {[
                   "Everything in Pro",
@@ -761,7 +717,7 @@ export const LandingPage: React.FC = () => {
                   <div key={idx} className="flex items-start gap-3">
                     <CheckCircle
                       size={18}
-                      className="text-gray-400 mt-0.5 flex-shrink-0"
+                      className="text-gray-400 mt-0.5 shrink-0"
                       strokeWidth={2}
                     />
                     <span className="text-gray-700 text-[15px]">{item}</span>
@@ -771,9 +727,7 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      {/* FAQ Section */}
+      </section>{" "}
       <section className="py-20 px-4 bg-[#F9FAFB]">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
@@ -781,7 +735,7 @@ export const LandingPage: React.FC = () => {
               <HelpCircle
                 size={28}
                 className="text-[#1B5E20]"
-                strokeWidth={2}
+                strokeWidth={2.5}
               />
             </div>
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -791,7 +745,6 @@ export const LandingPage: React.FC = () => {
               Everything you need to know about AgriAI
             </p>
           </div>
-
           <div className="space-y-3">
             {[
               {
@@ -832,7 +785,7 @@ export const LandingPage: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 pr-8">
                     {faq.q}
                   </h3>
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     {openFaqIndex === idx ? (
                       <ChevronUp
                         size={20}
@@ -849,11 +802,10 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </button>
                 <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openFaqIndex === idx
-                      ? "max-h-96 opacity-100"
-                      : "max-h-0 opacity-0"
-                  }`}
+                  className={`overflow-hidden transition-all duration-300 ease-in-out ${openFaqIndex === idx
+                    ? "max-h-96 opacity-100"
+                    : "max-h-0 opacity-0"
+                    }`}
                 >
                   <div className="px-6 pb-6 pt-0">
                     <p className="text-gray-600 leading-relaxed">{faq.a}</p>
@@ -861,9 +813,7 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Still have questions CTA */}
+          </div>{" "}
           <div className="mt-12 text-center">
             <p className="text-gray-600 mb-4">Still have questions?</p>
             <Link
@@ -875,11 +825,9 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-16 px-4 bg-gradient-to-br from-[#1B5E20] via-[#2E7D32] to-[#1B5E20] overflow-hidden">
-        {/* Background Pattern */}
+      </section>{" "}
+      <section className="relative py-16 px-4 bg-linear-to-br from-[#1B5E20] via-[#2E7D32] to-[#1B5E20] overflow-hidden">
+        {" "}
         <div className="absolute inset-0 opacity-10">
           <div
             className="absolute inset-0"
@@ -890,9 +838,8 @@ export const LandingPage: React.FC = () => {
             }}
           />
         </div>
-
         <div className="max-w-4xl mx-auto relative">
-          {/* Main Content */}
+          {" "}
           <div className="text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Ready to Transform Your Farm?
@@ -900,13 +847,11 @@ export const LandingPage: React.FC = () => {
             <p className="text-lg text-green-50 mb-8 max-w-2xl mx-auto">
               Join thousands of farmers already using AgriAI to increase yields
               and reduce costs
-            </p>
-
-            {/* Testimonial Quote - Enhanced */}
+            </p>{" "}
             <div className="max-w-2xl mx-auto mb-8">
-              <div className="bg-white/[0.08] backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.16)] transition-all duration-300">
+              <div className="bg-white/8 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.16)] transition-all duration-300">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center shrink-0 shadow-sm">
                     <span className="text-2xl">👨‍🌾</span>
                   </div>
                   <div className="text-left">
@@ -926,9 +871,7 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* CTA Button - Enhanced */}
+            </div>{" "}
             <Link
               to="/register"
               className="inline-flex items-center gap-2 bg-white text-[#1B5E20] px-8 py-3.5 rounded-xl font-semibold text-lg shadow-lg hover:shadow-2xl hover:scale-[1.03] transition-all duration-200"
@@ -938,13 +881,11 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* Footer */}
+      </section>{" "}
       <footer className="bg-gray-900 text-gray-300 py-16 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-12 gap-8 mb-12">
-            {/* Brand Section */}
+            {" "}
             <div className="md:col-span-4">
               <div className="flex items-center space-x-2 mb-4">
                 <div className="w-8 h-8 bg-[#1B5E20] rounded-lg flex items-center justify-center">
@@ -955,9 +896,7 @@ export const LandingPage: React.FC = () => {
               <p className="text-sm text-gray-400 mb-6 max-w-xs">
                 Smart farming solutions powered by AI. Helping farmers make
                 data-driven decisions for better yields.
-              </p>
-
-              {/* Newsletter Signup */}
+              </p>{" "}
               <div className="mb-6">
                 <h4 className="text-sm font-semibold text-white mb-3">
                   Stay Updated
@@ -965,16 +904,14 @@ export const LandingPage: React.FC = () => {
                 <div className="flex gap-2">
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Email address"
                     className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#1B5E20] focus:border-transparent"
                   />
                   <button className="bg-[#1B5E20] text-white p-2 rounded-lg hover:bg-[#0d3010] transition-colors">
                     <Send size={18} />
                   </button>
                 </div>
-              </div>
-
-              {/* Social Links */}
+              </div>{" "}
               <div className="flex gap-3">
                 <a
                   href="https://twitter.com"
@@ -1001,9 +938,7 @@ export const LandingPage: React.FC = () => {
                   <Github size={18} />
                 </a>
               </div>
-            </div>
-
-            {/* Product Links */}
+            </div>{" "}
             <div className="md:col-span-2">
               <h4 className="font-semibold text-white mb-4 text-sm">Product</h4>
               <ul className="space-y-3 text-sm">
@@ -1040,9 +975,7 @@ export const LandingPage: React.FC = () => {
                   </Link>
                 </li>
               </ul>
-            </div>
-
-            {/* Resources Links */}
+            </div>{" "}
             <div className="md:col-span-2">
               <h4 className="font-semibold text-white mb-4 text-sm">
                 Resources
@@ -1081,9 +1014,7 @@ export const LandingPage: React.FC = () => {
                   </a>
                 </li>
               </ul>
-            </div>
-
-            {/* Company Links */}
+            </div>{" "}
             <div className="md:col-span-2">
               <h4 className="font-semibold text-white mb-4 text-sm">Company</h4>
               <ul className="space-y-3 text-sm">
@@ -1112,9 +1043,7 @@ export const LandingPage: React.FC = () => {
                   </a>
                 </li>
               </ul>
-            </div>
-
-            {/* Legal Links */}
+            </div>{" "}
             <div className="md:col-span-2">
               <h4 className="font-semibold text-white mb-4 text-sm">Legal</h4>
               <ul className="space-y-3 text-sm">
@@ -1144,9 +1073,7 @@ export const LandingPage: React.FC = () => {
                 </li>
               </ul>
             </div>
-          </div>
-
-          {/* Bottom Bar */}
+          </div>{" "}
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-gray-400">
               © {new Date().getFullYear()} AgriAI Platform. All rights reserved.

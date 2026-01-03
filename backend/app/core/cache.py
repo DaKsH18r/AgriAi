@@ -1,6 +1,3 @@
-"""
-Production-grade Redis caching with connection pooling, fallback, and monitoring
-"""
 import json
 import redis
 from redis.connection import ConnectionPool
@@ -13,15 +10,6 @@ from app.core.logging_config import logger
 
 
 class CacheManager:
-    """
-    Production-grade Redis cache manager with:
-    - Connection pooling for performance
-    - Automatic fallback if Redis unavailable
-    - JSON serialization for complex objects
-    - Cache key namespacing
-    - Monitoring and metrics
-    """
-    
     def __init__(self):
         self._pool: Optional[ConnectionPool] = None
         self._client: Optional[redis.Redis] = None
@@ -29,7 +17,6 @@ class CacheManager:
         self._initialize_client()
     
     def _initialize_client(self):
-        """Initialize Redis connection with connection pooling"""
         try:
             redis_url = getattr(settings, 'REDIS_URL', 'redis://redis:6379/0')
             
@@ -51,35 +38,23 @@ class CacheManager:
             self._client.ping()
             self._available = True
             
-            logger.info("✅ Redis cache initialized successfully", endpoint="cache")
+            logger.info("[OK] Redis cache initialized successfully", endpoint="cache")
             
         except Exception as e:
             self._available = False
             logger.warning(
-                f"⚠️ Redis unavailable - caching disabled (fallback mode): {str(e)}",
+                f"[WARNING] Redis unavailable - caching disabled (fallback mode): {str(e)}",
                 exc_info=e,
                 endpoint="cache"
             )
     
     def is_available(self) -> bool:
-        """Check if Redis is available"""
         return self._available and self._client is not None
     
     def _make_key(self, namespace: str, key: str) -> str:
-        """Create namespaced cache key"""
         return f"agri_ai:{namespace}:{key}"
     
     def get(self, namespace: str, key: str) -> Optional[Any]:
-        """
-        Get value from cache
-        
-        Args:
-            namespace: Category (weather, prices, etc.)
-            key: Specific identifier
-            
-        Returns:
-            Cached value or None
-        """
         if not self.is_available():
             return None
         
@@ -116,18 +91,6 @@ class CacheManager:
         value: Any,
         ttl: int = 3600
     ) -> bool:
-        """
-        Set value in cache with TTL
-        
-        Args:
-            namespace: Category (weather, prices, etc.)
-            key: Specific identifier
-            value: Data to cache (must be JSON serializable)
-            ttl: Time to live in seconds (default 1 hour)
-            
-        Returns:
-            True if successful, False otherwise
-        """
         if not self.is_available():
             return False
         
@@ -162,7 +125,6 @@ class CacheManager:
             return False
     
     def delete(self, namespace: str, key: str) -> bool:
-        """Delete key from cache"""
         if not self.is_available():
             return False
         
@@ -224,7 +186,6 @@ class CacheManager:
             return 0
     
     def get_stats(self) -> dict:
-        """Get cache statistics for monitoring"""
         if not self.is_available():
             return {
                 "available": False,
@@ -255,7 +216,6 @@ class CacheManager:
             }
     
     def _calculate_hit_rate(self, stats: dict) -> float:
-        """Calculate cache hit rate percentage"""
         hits = stats.get("keyspace_hits", 0)
         misses = stats.get("keyspace_misses", 0)
         total = hits + misses
@@ -266,7 +226,6 @@ class CacheManager:
         return round((hits / total) * 100, 2)
     
     def health_check(self) -> bool:
-        """Check if cache is healthy"""
         if not self.is_available():
             return False
         
@@ -277,7 +236,6 @@ class CacheManager:
             return False
     
     def close(self):
-        """Close Redis connection"""
         if self._pool:
             self._pool.disconnect()
             logger.info("Redis connection closed", endpoint="cache")

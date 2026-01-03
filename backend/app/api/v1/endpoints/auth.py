@@ -1,4 +1,3 @@
-"""Authentication endpoints."""
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
@@ -26,14 +25,17 @@ from app.core.security import (
 from app.core.config import settings
 from app.core.validators import validate_email, validate_password
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from app.services.email_service import email_service
 from app.core.logging_config import logger
 
 router = APIRouter()
 
-# Rate limiter
-limiter = Limiter(key_func=get_remote_address)
+# Rate limiter - disabled in testing to allow tests to run freely
+limiter = Limiter(
+    key_func=get_remote_address,
+    enabled=settings.ENVIRONMENT != "testing"  # Disable in test mode
+)
 
 # OAuth2 scheme for token authentication
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
@@ -59,7 +61,6 @@ async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     db: Session = Depends(get_db)
 ) -> User:
-    """Get current authenticated user from JWT token."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -91,7 +92,6 @@ async def get_current_user(
 async def get_current_active_user(
     current_user: Annotated[User, Depends(get_current_user)]
 ) -> User:
-    """Ensure current user is active."""
     if not current_user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -103,7 +103,6 @@ async def get_current_active_user(
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("5/hour")  # Max 5 registrations per hour per IP
 async def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user."""
     # Validate email and password
     validated_email = validate_email(user_data.email)
     validated_password = validate_password(user_data.password)
@@ -151,7 +150,6 @@ async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Session = Depends(get_db)
 ):
-    """Login user and return JWT token."""
     # Find user by email (username field in OAuth2 form)
     user = db.query(User).filter(User.email == form_data.username).first()
     
@@ -184,7 +182,6 @@ async def login(
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: Annotated[User, Depends(get_current_active_user)]):
-    """Get current user profile."""
     return current_user
 
 
@@ -194,7 +191,6 @@ async def update_profile(
     current_user: Annotated[User, Depends(get_current_active_user)],
     db: Session = Depends(get_db)
 ):
-    """Update current user profile."""
     # Update only provided fields
     if update_data.full_name is not None:
         current_user.full_name = update_data.full_name
@@ -216,7 +212,6 @@ async def update_profile(
 
 @router.post("/logout")
 async def logout(current_user: Annotated[User, Depends(get_current_active_user)]):
-    """Logout user (client should delete token)."""
     return {"message": "Successfully logged out"}
 
 
@@ -227,7 +222,6 @@ async def forgot_password(
     forgot_request: ForgotPasswordRequest,
     db: Session = Depends(get_db)
 ):
-    """Request password reset - generates reset token."""
     # Find user by email
     user = db.query(User).filter(User.email == forgot_request.email).first()
     
@@ -241,7 +235,7 @@ async def forgot_password(
     
     # Token expires in 1 hour
     user.reset_token = reset_token
-    user.reset_token_expires = datetime.utcnow() + timedelta(hours=1)
+    user.reset_token_expires = datetime.now(timezone.utc) + timedelta(hours=1)
     
     db.commit()
     
@@ -256,7 +250,7 @@ async def forgot_password(
         )
     except Exception as e:
         # Log error but don't reveal to user
-        print(f"❌ Failed to send email: {str(e)}")
+        logger.error("Failed to send password reset email", exc_info=e, extra={"email": email_lower})
         # Still return success to prevent email enumeration
     
     return {"message": "If that email exists, a password reset link has been sent."}
@@ -269,7 +263,6 @@ async def reset_password(
     reset_request: ResetPasswordRequest,
     db: Session = Depends(get_db)
 ):
-    """Reset password using valid reset token."""
     # Find user by reset token
     user = db.query(User).filter(User.reset_token == reset_request.token).first()
     
@@ -280,7 +273,7 @@ async def reset_password(
         )
     
     # Check if token is expired
-    if not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+    if not user.reset_token_expires or user.reset_token_expires < datetime.now(timezone.utc):
         # Clear expired token
         user.reset_token = None
         user.reset_token_expires = None
@@ -305,7 +298,6 @@ async def reset_password(
 
 @router.get("/google/login")
 async def google_login(request: Request):
-    """Initiate Google OAuth login."""
     try:
         redirect_uri = settings.GOOGLE_REDIRECT_URI
         return await oauth.google.authorize_redirect(request, redirect_uri)
@@ -319,7 +311,6 @@ async def google_login(request: Request):
 
 @router.get("/google/callback")
 async def google_callback(request: Request, db: Session = Depends(get_db)):
-    """Handle Google OAuth callback."""
     try:
         token = await oauth.google.authorize_access_token(request)
         user_info = token.get('userinfo')

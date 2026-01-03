@@ -73,8 +73,8 @@ export const AdminPage: React.FC = () => {
 
     try {
       if (activeTab === "users") {
-        const userData = await adminAPI.getUsers();
-        setUsers(userData);
+        const apiUsers = await adminAPI.getUsers();
+        setUsers(apiUsers);
       } else if (activeTab === "logs") {
         const logData = await adminAPI.getLogs();
         setLogs(logData.map((log) => ({ ...log, id: String(log.id) })));
@@ -149,13 +149,12 @@ export const AdminPage: React.FC = () => {
       sortable: true,
       render: (user: User) => (
         <span
-          className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            user.plan === "Team"
-              ? "bg-purple-100 text-purple-700"
-              : user.plan === "Pro"
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${user.plan === "Team"
+            ? "bg-purple-100 text-purple-700"
+            : user.plan === "Pro"
               ? "bg-green-100 text-green-700"
               : "bg-gray-100 text-gray-700"
-          }`}
+            }`}
         >
           {user.plan}
         </span>
@@ -167,13 +166,12 @@ export const AdminPage: React.FC = () => {
       sortable: true,
       render: (user: User) => (
         <span
-          className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            user.status === "active"
-              ? "bg-green-100 text-green-700"
-              : user.status === "banned"
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${user.status === "active"
+            ? "bg-green-100 text-green-700"
+            : user.status === "banned"
               ? "bg-red-100 text-red-700"
               : "bg-gray-100 text-gray-600"
-          }`}
+            }`}
         >
           {user.status}
         </span>
@@ -225,13 +223,12 @@ export const AdminPage: React.FC = () => {
       sortable: true,
       render: (log: SystemLog) => (
         <span
-          className={`px-3 py-1 rounded-full text-sm font-semibold ${
-            log.level === "error"
-              ? "bg-red-100 text-red-700"
-              : log.level === "warning"
+          className={`px-3 py-1 rounded-full text-sm font-semibold ${log.level === "error"
+            ? "bg-red-100 text-red-700"
+            : log.level === "warning"
               ? "bg-yellow-100 text-yellow-700"
               : "bg-blue-100 text-blue-700"
-          }`}
+            }`}
         >
           {log.level}
         </span>
@@ -242,12 +239,12 @@ export const AdminPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-6">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-green-50/30 to-blue-50/30 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Admin Panel</h1>
-          <p className="text-gray-600">
+        {" "}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2">Admin Panel</h1>
+          <p className="text-gray-600 text-sm sm:text-base">
             Manage users, plans, features, and system settings
           </p>
           {error && (
@@ -256,33 +253,30 @@ export const AdminPage: React.FC = () => {
             </div>
           )}
         </div>{" "}
-        {/* Tabs */}
         <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition ${
-                activeTab === tab.id
-                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-              }`}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold whitespace-nowrap transition ${activeTab === tab.id
+                ? "bg-emerald-900 text-white shadow-lg"
+                : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                }`}
             >
               <tab.icon size={20} />
               {tab.label}
             </button>
           ))}
-        </div>
-        {/* Content */}
+        </div>{" "}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          {/* Users Tab */}
+          {" "}
           {activeTab === "users" && (
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">
                   User Management
                 </h2>
-                <button className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
+                <button className="flex items-center gap-2 px-6 py-3 bg-emerald-900 hover:bg-emerald-800 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition">
                   <Plus size={18} />
                   Add User
                 </button>
@@ -301,9 +295,7 @@ export const AdminPage: React.FC = () => {
                 />
               )}
             </div>
-          )}
-
-          {/* System Logs Tab */}
+          )}{" "}
           {activeTab === "logs" && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -323,9 +315,7 @@ export const AdminPage: React.FC = () => {
                 />
               )}
             </div>
-          )}
-
-          {/* Analytics Tab */}
+          )}{" "}
           {activeTab === "analytics" && (
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -338,7 +328,7 @@ export const AdminPage: React.FC = () => {
                 </div>
               ) : stats ? (
                 <>
-                  {/* Stats Grid */}
+                  {" "}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     {[
                       {
@@ -354,9 +344,8 @@ export const AdminPage: React.FC = () => {
                       {
                         label: "Active Users",
                         value: stats.active_users.toLocaleString(),
-                        change: `${
-                          stats.total_users - stats.active_users
-                        } inactive`,
+                        change: `${stats.total_users - stats.active_users
+                          } inactive`,
                         icon: UserCheck,
                         color: "green",
                       },

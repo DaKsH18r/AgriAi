@@ -51,23 +51,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     : navItems;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
+    <div className="flex h-screen overflow-hidden bg-slate-50">      {isMobileMenuOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
-      )}
-
-      {/* Sidebar */}
-      <aside
+      )}      <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-emerald-900 text-white flex flex-col transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
-      >
-        {/* Logo Section */}
-        <div className="p-6 border-b border-emerald-800">
+      >        <div className="p-6 border-b border-emerald-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-9 h-9 bg-emerald-800 rounded-lg flex items-center justify-center">
@@ -77,19 +70,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <h1 className="text-lg font-semibold">AgriAI</h1>
                 <p className="text-xs text-emerald-200">Smart Farming</p>
               </div>
-            </div>
-            {/* Close button for mobile */}
-            <button
+            </div>            <button
               onClick={() => setIsMobileMenuOpen(false)}
               className="lg:hidden text-emerald-200 hover:text-white"
             >
               <X size={24} />
             </button>
           </div>
-        </div>
-
-        {/* Navigation Links */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        </div>        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {allNavItems.map((item) => (
             <NavLink
               key={item.path}
@@ -107,10 +95,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <span className="text-sm font-medium">{item.label}</span>
             </NavLink>
           ))}
-        </nav>
-
-        {/* User Section */}
-        <div className="p-4 border-t border-emerald-800">
+        </nav>        <div className="p-4 border-t border-emerald-800">
           <div className="flex items-center space-x-3 mb-3">
             <div className="w-9 h-9 bg-emerald-800 rounded-full flex items-center justify-center">
               <User size={18} className="text-emerald-200" />
@@ -128,15 +113,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             <span className="text-sm font-medium">Logout</span>
           </button>
         </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* Mobile menu button */}
-            <button
+      </aside>      <div className="flex-1 flex flex-col overflow-hidden">        <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">            <button
               onClick={() => setIsMobileMenuOpen(true)}
               className="lg:hidden text-slate-600 hover:text-slate-900"
             >
@@ -160,10 +138,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <User size={18} className="text-emerald-900" />
             </button>
           </div>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto bg-slate-50">
+        </header>        <main className="flex-1 overflow-y-auto bg-slate-50">
           <div className="p-8">{children}</div>
         </main>
       </div>

@@ -1,7 +1,3 @@
-"""
-Notification service for sending alerts to farmers
-Supports console logging, SMS (Twilio), database storage, and future WhatsApp
-"""
 
 import logging
 from typing import Dict
@@ -12,10 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class NotificationService:
-    """
-    Sends alerts to farmers via SMS/Email/Console/Database
-    """
-    
     def __init__(self):
         # Twilio setup (for SMS) - optional
         self.twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
@@ -27,7 +19,7 @@ class NotificationService:
                 from twilio.rest import Client
                 self.twilio_client = Client(self.twilio_account_sid, self.twilio_auth_token)
                 self.sms_enabled = True
-                logger.info("✅ Twilio SMS enabled")
+                logger.info("[OK] Twilio SMS enabled")
             except Exception as e:
                 self.sms_enabled = False
                 logger.warning(f"Twilio initialization failed: {e}")
@@ -36,20 +28,8 @@ class NotificationService:
             logger.info("Twilio not configured - SMS disabled (console only)")
     
     def send_alert(self, alert: Dict):
-        """
-        Send alert to user and save to database
-        
-        alert = {
-            'user_id': int,  # Required for database storage
-            'user_email': str,
-            'crop': str,
-            'action': 'SELL_NOW' | 'WAIT' | 'HOLD',
-            'reasoning': str,
-            'confidence': float,
-            'expected_price': float
-        }
-        """
-        logger.info(f"📢 Sending alert to {alert.get('user_email', 'unknown')}")
+
+        logger.info(f" Sending alert to {alert.get('user_email', 'unknown')}")
         
         # Format message
         message = self._format_message(alert)
@@ -68,7 +48,6 @@ class NotificationService:
             logger.info(f"SMS would be sent: {message[:160]}")
     
     def _save_to_database(self, alert: Dict, message: str):
-        """Save notification to database"""
         try:
             from app.core.db_session import get_db_session
             from app.models.notification import Notification
@@ -82,7 +61,7 @@ class NotificationService:
                 notification = Notification(
                     user_id=alert['user_id'],
                     type='agent_recommendation',
-                    title=f"🌾 {alert.get('crop', 'Crop').upper()} - {action.replace('_', ' ')}",
+                    title=f" {alert.get('crop', 'Crop').upper()} - {action.replace('_', ' ')}",
                     message=message,
                     priority=priority,
                     extra_data=json.dumps({
@@ -95,19 +74,18 @@ class NotificationService:
                 
                 db.add(notification)
                 # Auto-commits on success
-                logger.info(f"✅ Notification saved to database for user {alert['user_id']}")
+                logger.info(f"[OK] Notification saved to database for user {alert['user_id']}")
             
         except Exception as e:
             logger.error(f"Failed to save notification to database: {e}")
     
     def _format_message(self, alert: Dict) -> str:
-        """Format alert message"""
         action = alert.get('action', 'HOLD')
         crop = alert.get('crop', 'crop')
         confidence = alert.get('confidence', 0)
         expected_price = alert.get('expected_price')
         
-        emoji = "🔴" if action == 'SELL_NOW' else "🟡" if action == 'WAIT' else "🟢"
+        emoji = "" if action == 'SELL_NOW' else "🟡" if action == 'WAIT' else "🟢"
         
         message = f"""{emoji} {crop.upper()} Alert
 
@@ -116,7 +94,7 @@ Confidence: {confidence:.0%}
 """
         
         if expected_price:
-            message += f"Expected Price: ₹{expected_price:.2f}/kg\n"
+            message += f"Expected Price: Rs.{expected_price:.2f}/kg\n"
         
         message += f"\n{alert.get('reasoning', '')[:300]}\n"
         message += "\n- Smart Crop Advisory Agent"
@@ -124,12 +102,10 @@ Confidence: {confidence:.0%}
         return message
     
     def _send_console(self, message: str, email: str):
-        """Log to console (for development)"""
-        logger.info(f"📧 ALERT TO: {email}")
+        logger.info(f" ALERT TO: {email}")
         logger.info(f"MESSAGE: {message}")
     
     def send_sms(self, phone: str, message: str):
-        """Send SMS via Twilio"""
         if not self.sms_enabled:
             logger.warning("SMS not enabled")
             return False
@@ -140,7 +116,7 @@ Confidence: {confidence:.0%}
                 from_=self.twilio_phone,
                 to=phone
             )
-            logger.info(f"✅ SMS sent to {phone}")
+            logger.info(f"[OK] SMS sent to {phone}")
             return True
         except Exception as e:
             logger.error(f"SMS failed: {str(e)}")

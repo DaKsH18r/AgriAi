@@ -1,4 +1,3 @@
-"""Audit logging utility for tracking admin actions"""
 import json
 from typing import Optional
 from fastapi import Request
@@ -6,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.models.audit_log import AuditLog
 from app.models.user import User
+from app.core.logging_config import logger
 
 
 def log_admin_action(
@@ -60,5 +60,5 @@ def log_admin_action(
         
     except Exception as e:
         # Don't fail the request if audit logging fails
-        print(f"Failed to log audit entry: {e}")
+        logger.error("Failed to log audit entry", exc_info=e, extra={"admin_id": admin.id, "action": action})
         db.rollback()

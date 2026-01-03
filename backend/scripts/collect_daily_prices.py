@@ -21,7 +21,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def collect_daily_prices():
-    """Collect today's prices for all supported crops"""
     service = DataIntegrationService()
     
     crops = [

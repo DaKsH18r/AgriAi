@@ -1,4 +1,3 @@
-"""Router package initialization"""
 from app.routers import (
     weather,
     chatbot,

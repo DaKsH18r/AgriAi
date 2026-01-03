@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 
@@ -75,10 +76,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <ToastContext.Provider value={{ showToast }}>
-      {children}
-
-      {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
+      {children}      <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
         {toasts.map((toast) => (
           <div
             key={toast.id}

@@ -1,4 +1,3 @@
-"""Core package initialization."""
 from .config import settings
 from .security import (
     verify_password,

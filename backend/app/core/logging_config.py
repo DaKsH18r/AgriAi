@@ -1,11 +1,8 @@
-"""
-Centralized logging configuration for production-grade error tracking
-"""
 import logging
 import sys
 from pathlib import Path
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 import json
 import traceback
@@ -17,11 +14,10 @@ LOG_DIR.mkdir(exist_ok=True)
 
 
 class JSONFormatter(logging.Formatter):
-    """Format logs as JSON for structured logging"""
     
     def format(self, record: logging.LogRecord) -> str:
         log_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -50,7 +46,6 @@ class JSONFormatter(logging.Formatter):
 
 
 class AppLogger:
-    """Centralized application logger"""
     
     def __init__(self, name: str = "agri_ai"):
         self.logger = logging.getLogger(name)
@@ -61,9 +56,9 @@ class AppLogger:
             return
             
         self._setup_handlers()
+        
     
     def _setup_handlers(self):
-        """Setup file and console handlers"""
         
         # Console Handler (human-readable)
         console_handler = logging.StreamHandler(sys.stdout)
@@ -109,27 +104,22 @@ class AppLogger:
         self.logger.addHandler(json_handler)
     
     def info(self, message: str, **kwargs):
-        """Log info message"""
         extra = self._build_extra(kwargs)
         self.logger.info(message, extra=extra)
     
     def warning(self, message: str, **kwargs):
-        """Log warning message"""
         extra = self._build_extra(kwargs)
         self.logger.warning(message, extra=extra)
     
     def error(self, message: str, exc_info: Optional[Exception] = None, **kwargs):
-        """Log error message"""
         extra = self._build_extra(kwargs)
         self.logger.error(message, exc_info=exc_info or sys.exc_info(), extra=extra)
     
     def critical(self, message: str, exc_info: Optional[Exception] = None, **kwargs):
-        """Log critical message"""
         extra = self._build_extra(kwargs)
         self.logger.critical(message, exc_info=exc_info or sys.exc_info(), extra=extra)
     
     def _build_extra(self, kwargs: dict) -> dict:
-        """Build extra fields for logging"""
         extra = {}
         if "user_id" in kwargs:
             extra["user_id"] = kwargs["user_id"]
@@ -146,5 +136,4 @@ logger = AppLogger()
 
 # Helper function for easy import
 def get_logger(name: str = "agri_ai") -> AppLogger:
-    """Get logger instance"""
     return AppLogger(name)

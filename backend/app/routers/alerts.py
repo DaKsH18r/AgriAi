@@ -1,4 +1,3 @@
-"""Price Alerts API Router"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -57,7 +56,6 @@ async def create_alert(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Create a new price alert"""
     # Validate alert type
     if alert.alert_type not in ['ABOVE', 'BELOW', 'CHANGE']:
         raise HTTPException(status_code=400, detail="Invalid alert_type. Must be ABOVE, BELOW, or CHANGE")
@@ -92,7 +90,7 @@ async def get_user_alerts(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all alerts for current user"""
+    
     alerts = db.query(PriceAlert).filter(
         PriceAlert.user_id == current_user.id
     ).order_by(PriceAlert.created_at.desc()).all()
@@ -106,7 +104,7 @@ async def get_alert(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get specific alert by ID"""
+    
     alert = db.query(PriceAlert).filter(
         PriceAlert.id == alert_id,
         PriceAlert.user_id == current_user.id
@@ -125,7 +123,7 @@ async def update_alert(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update an existing alert"""
+    
     alert = db.query(PriceAlert).filter(
         PriceAlert.id == alert_id,
         PriceAlert.user_id == current_user.id
@@ -151,7 +149,7 @@ async def delete_alert(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Delete a price alert"""
+    
     alert = db.query(PriceAlert).filter(
         PriceAlert.id == alert_id,
         PriceAlert.user_id == current_user.id

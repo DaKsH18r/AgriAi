@@ -1,4 +1,3 @@
-"""User Profile API Router"""
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -71,7 +70,7 @@ class UserCropResponse(BaseModel):
 
 @router.get("/me", response_model=UserProfileResponse)
 async def get_my_profile(current_user: User = Depends(get_current_user)):
-    """Get current user's profile"""
+    
     return current_user
 
 
@@ -81,7 +80,6 @@ async def update_my_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update current user's profile"""
     # Update fields
     update_data = profile_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
@@ -98,7 +96,7 @@ async def get_my_crops(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all crops for current user"""
+    
     crops = db.query(UserCrop).filter(
         UserCrop.user_id == current_user.id
     ).order_by(UserCrop.created_at.desc()).all()
@@ -112,7 +110,7 @@ async def add_my_crop(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Add a crop to user's profile"""
+    
     db_crop = UserCrop(
         user_id=current_user.id,
         crop=crop.crop.lower(),
@@ -134,7 +132,7 @@ async def update_my_crop(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Update a user's crop"""
+    
     crop = db.query(UserCrop).filter(
         UserCrop.id == crop_id,
         UserCrop.user_id == current_user.id
@@ -160,7 +158,7 @@ async def delete_my_crop(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Delete a user's crop"""
+    
     crop = db.query(UserCrop).filter(
         UserCrop.id == crop_id,
         UserCrop.user_id == current_user.id

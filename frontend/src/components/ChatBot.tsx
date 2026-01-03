@@ -1,6 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader } from "lucide-react";
 import { chatbotAPI } from "../services/api";
+import { logger } from "../utils/logger";
 
 interface Message {
   role: "user" | "assistant";
@@ -8,12 +9,12 @@ interface Message {
   timestamp: Date;
 }
 
-export default function Chatbot() {
+const ChatBot = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
       content:
-        "Hello! I'm your Agriculture AI Assistant. I can help you with crop advice, pest management, soil health, and farming practices. What would you like to know?",
+        "Ask me about crop advice, pest management, soil health, or farming practices.",
       timestamp: new Date(),
     },
   ]);
@@ -61,9 +62,10 @@ export default function Chatbot() {
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      // Limit messages to last 50 to prevent memory issues
+      setMessages((prev) => [...prev, assistantMessage].slice(-50));
     } catch (error) {
-      console.error("Error:", error);
+      logger.error("Chatbot error", error);
       const errorMessage: Message = {
         role: "assistant",
         content:
@@ -88,33 +90,29 @@ export default function Chatbot() {
   return (
     <div className="min-h-full bg-slate-50 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-semibold text-slate-900 mb-2">
+        {" "}
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-3xl font-semibold text-slate-900 mb-1 sm:mb-2">
             Farmer Assistant
           </h1>
-          <p className="text-slate-600">
+          <p className="text-slate-600 text-sm sm:text-base">
             Ask me anything about farming, crops, and agriculture
           </p>
-        </div>
-
-        {/* Chat Container */}
+        </div>{" "}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          {/* Messages Area */}
-          <div className="h-96 overflow-y-auto p-6 space-y-4">
+          {" "}
+          <div className="h-72 sm:h-96 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex items-start gap-3 ${
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
-                }`}
+                className={`flex items-start gap-3 ${message.role === "user" ? "flex-row-reverse" : "flex-row"
+                  }`}
               >
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    message.role === "user"
-                      ? "bg-blue-500 text-white"
-                      : "bg-green-500 text-white"
-                  }`}
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.role === "user"
+                    ? "bg-blue-500 text-white"
+                    : "bg-green-500 text-white"
+                    }`}
                 >
                   {message.role === "user" ? (
                     <User size={18} />
@@ -123,21 +121,19 @@ export default function Chatbot() {
                   )}
                 </div>
                 <div
-                  className={`flex-1 px-4 py-3 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-blue-500 text-white ml-12"
-                      : "bg-gray-100 text-gray-800 mr-12"
-                  }`}
+                  className={`flex-1 px-4 py-3 rounded-lg ${message.role === "user"
+                    ? "bg-blue-500 text-white ml-12"
+                    : "bg-gray-100 text-gray-800 mr-12"
+                    }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">
                     {message.content}
                   </p>
                   <p
-                    className={`text-xs mt-1 ${
-                      message.role === "user"
-                        ? "text-blue-100"
-                        : "text-gray-500"
-                    }`}
+                    className={`text-xs mt-1 ${message.role === "user"
+                      ? "text-blue-100"
+                      : "text-gray-500"
+                      }`}
                   >
                     {message.timestamp.toLocaleTimeString()}
                   </p>
@@ -155,9 +151,7 @@ export default function Chatbot() {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>
-
-          {/* Suggestions */}
+          </div>{" "}
           {messages.length <= 1 && (
             <div className="px-6 py-4 bg-gray-50 border-t">
               <p className="text-sm text-gray-600 mb-2">Quick questions:</p>
@@ -173,10 +167,8 @@ export default function Chatbot() {
                 ))}
               </div>
             </div>
-          )}
-
-          {/* Input Area */}
-          <form onSubmit={handleSubmit} className="p-4 border-t">
+          )}{" "}
+          <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -189,10 +181,10 @@ export default function Chatbot() {
               <button
                 type="submit"
                 disabled={loading || !inputMessage.trim()}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 transition flex items-center gap-2"
+                className="px-3 sm:px-6 py-3 bg-emerald-900 text-white rounded-lg hover:bg-emerald-800 disabled:bg-gray-400 transition flex items-center gap-1 sm:gap-2 shrink-0"
               >
                 <Send size={18} />
-                Send
+                <span className="hidden sm:inline">Send</span>
               </button>
             </div>
           </form>
@@ -200,4 +192,6 @@ export default function Chatbot() {
       </div>
     </div>
   );
-}
+};
+
+export default React.memo(ChatBot);

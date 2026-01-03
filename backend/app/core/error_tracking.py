@@ -1,6 +1,3 @@
-"""
-Middleware for tracking and logging errors across the application
-"""
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -11,7 +8,6 @@ from app.core.logging_config import logger
 
 
 class ErrorTrackingMiddleware(BaseHTTPMiddleware):
-    """Middleware to track and log all errors"""
     
     async def dispatch(self, request: Request, call_next: Callable):
         # Generate request ID for tracking

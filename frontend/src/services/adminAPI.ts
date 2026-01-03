@@ -1,13 +1,8 @@
-/**
- * Admin API service functions
- */
-
 import axios from "axios";
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
-// Create axios instance with auth token
 const createAuthClient = () => {
   const token = localStorage.getItem("token");
   return axios.create({
@@ -47,14 +42,12 @@ export interface SystemLog {
 }
 
 export const adminAPI = {
-  // Get platform statistics
   getStats: async (): Promise<PlatformStats> => {
     const client = createAuthClient();
     const response = await client.get("/admin/stats");
     return response.data;
   },
 
-  // Get users list with pagination
   getUsers: async (
     skip: number = 0,
     limit: number = 10,
@@ -68,7 +61,6 @@ export const adminAPI = {
     return response.data;
   },
 
-  // Update user status (activate/deactivate)
   updateUserStatus: async (userId: number, isActive: boolean) => {
     const client = createAuthClient();
     const response = await client.put(`/admin/users/${userId}/status`, null, {
@@ -77,14 +69,12 @@ export const adminAPI = {
     return response.data;
   },
 
-  // Delete user
   deleteUser: async (userId: number) => {
     const client = createAuthClient();
     const response = await client.delete(`/admin/users/${userId}`);
     return response.data;
   },
 
-  // Get system logs
   getLogs: async (limit: number = 50, level?: string): Promise<SystemLog[]> => {
     const client = createAuthClient();
     const params: Record<string, string | number> = { limit };
@@ -94,7 +84,6 @@ export const adminAPI = {
     return response.data;
   },
 
-  // Health check
   checkHealth: async () => {
     const client = createAuthClient();
     const response = await client.get("/admin/health");

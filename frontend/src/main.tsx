@@ -10,9 +10,9 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>
 );
 
-// Log performance metrics in production
 if (import.meta.env.PROD) {
   window.addEventListener("load", () => {
     setTimeout(logResourceTiming, 3000);
   });
 }
+

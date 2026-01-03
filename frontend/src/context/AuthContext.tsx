@@ -1,5 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
+import { logger } from "../utils/logger";
 
 interface User {
   id: number;
@@ -50,20 +52,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [loading, setLoading] = useState(true);
 
-  // API base URL - backend is on port 8000
-  const API_BASE_URL = "http://localhost:8000/api";
+  // API base URL - configured via environment variables
+  const API_BASE_URL =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
   // Fetch current user on mount if token exists
   useEffect(() => {
     const fetchUser = async () => {
       if (token) {
         try {
-          const response = await axios.get(`${API_BASE_URL}/auth/me`, {
+          const response = await axios.get(`${API_BASE_URL}/v1/auth/me`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           setUser(response.data);
         } catch (error) {
-          console.error("Failed to fetch user:", error);
+          logger.error("Failed to fetch user", { error });
           // Token might be invalid, clear it
           localStorage.removeItem("token");
           setToken(null);
@@ -73,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     fetchUser();
-  }, [token]);
+  }, [token, API_BASE_URL]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -89,7 +92,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.setItem("token", access_token);
 
       // Fetch user data
-      const userResponse = await axios.get(`${API_BASE_URL}/auth/me`, {
+      const userResponse = await axios.get(`${API_BASE_URL}/v1/auth/me`, {
         headers: { Authorization: `Bearer ${access_token}` },
       });
 

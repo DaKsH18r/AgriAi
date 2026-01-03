@@ -13,12 +13,10 @@ export const DocsPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white flex">
-      {/* Sidebar */}
-      <aside className="hidden lg:block w-64 bg-gray-50 border-r border-gray-200 fixed h-full overflow-y-auto">
+    <div className="min-h-screen bg-white flex">      <aside className="hidden lg:block w-64 bg-gray-50 border-r border-gray-200 fixed h-full overflow-y-auto">
         <div className="p-6">
           <Link to="/" className="flex items-center space-x-2 mb-8">
-            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-linear-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold">🌾</span>
             </div>
             <span className="font-bold gradient-text">AgriAI Docs</span>
@@ -37,20 +35,14 @@ export const DocsPage: React.FC = () => {
             ))}
           </nav>
         </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-64">
+      </aside>      <main className="flex-1 lg:ml-64">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Documentation
           </h1>
           <p className="text-xl text-gray-600 mb-12">
             Everything you need to know about AgriAI Platform
-          </p>
-
-          {/* Getting Started */}
-          <section id="getting-started" className="mb-16 scroll-mt-8">
+          </p>          <section id="getting-started" className="mb-16 scroll-mt-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Getting Started
             </h2>
@@ -66,10 +58,7 @@ export const DocsPage: React.FC = () => {
                 <li>Start receiving AI-powered recommendations</li>
               </ol>
             </div>
-          </section>
-
-          {/* Weather API */}
-          <section id="weather" className="mb-16 scroll-mt-8">
+          </section>          <section id="weather" className="mb-16 scroll-mt-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Weather Intelligence
             </h2>
@@ -87,10 +76,7 @@ export const DocsPage: React.FC = () => {
                 <li>Humidity and UV index</li>
               </ul>
             </div>
-          </section>
-
-          {/* Markets */}
-          <section id="markets" className="mb-16 scroll-mt-8">
+          </section>          <section id="markets" className="mb-16 scroll-mt-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Market Data
             </h2>
@@ -105,10 +91,7 @@ export const DocsPage: React.FC = () => {
                 </code>
               </div>
             </div>
-          </section>
-
-          {/* Security */}
-          <section id="security" className="mb-16 scroll-mt-8">
+          </section>          <section id="security" className="mb-16 scroll-mt-8">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
               Security & Privacy
             </h2>
@@ -125,10 +108,7 @@ export const DocsPage: React.FC = () => {
                 <li>Your data is never sold to third parties</li>
               </ul>
             </div>
-          </section>
-
-          {/* CTA */}
-          <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-8 text-center">
+          </section>          <div className="bg-linear-to-r from-green-500 to-emerald-600 rounded-2xl p-8 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">
               Ready to Get Started?
             </h3>
