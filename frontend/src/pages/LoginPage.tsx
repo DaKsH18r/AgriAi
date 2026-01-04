@@ -178,7 +178,7 @@ export const LoginPage: React.FC = () => {
             onClick={() => {
               const apiUrl = import.meta.env.VITE_API_BASE_URL;
               if (!apiUrl) {
-                console.error('VITE_API_BASE_URL is not configured');
+                console.error("VITE_API_BASE_URL is not configured");
                 return;
               }
               window.location.href = `${apiUrl.replace(

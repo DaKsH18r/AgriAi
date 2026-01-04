@@ -162,8 +162,9 @@ export const AlertsPage: React.FC = () => {
             </h1>
             <p className="text-gray-600 text-sm sm:text-base">
               {alerts.length > 0
-                ? `Managing ${alerts.length} alert${alerts.length > 1 ? "s" : ""
-                }`
+                ? `Managing ${alerts.length} alert${
+                    alerts.length > 1 ? "s" : ""
+                  }`
                 : "Create alerts to get notified in the website when prices change"}
             </p>
           </div>
@@ -202,8 +203,9 @@ export const AlertsPage: React.FC = () => {
             {alerts.map((alert) => (
               <div
                 key={alert.id}
-                className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${alert.is_active ? "border-l-green-500" : "border-l-gray-300"
-                  }`}
+                className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${
+                  alert.is_active ? "border-l-green-500" : "border-l-gray-300"
+                }`}
               >
                 <div className="flex items-start gap-4">
                   <TrendingUp className="text-green-600 shrink-0" size={24} />
@@ -229,10 +231,11 @@ export const AlertsPage: React.FC = () => {
                           aria-label={
                             alert.is_active ? "Pause alert" : "Activate alert"
                           }
-                          className={`px-4 py-2 rounded-lg font-medium transition ${alert.is_active
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-600"
-                            }`}
+                          className={`px-4 py-2 rounded-lg font-medium transition ${
+                            alert.is_active
+                              ? "bg-green-100 text-green-700"
+                              : "bg-gray-100 text-gray-600"
+                          }`}
                         >
                           {alert.is_active ? "Active" : "Paused"}
                         </button>

@@ -73,7 +73,7 @@ export const RegisterPage: React.FC = () => {
   const handleGoogleSignup = () => {
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
     if (!apiUrl) {
-      console.error('VITE_API_BASE_URL is not configured');
+      console.error("VITE_API_BASE_URL is not configured");
       return;
     }
     window.location.href = `${apiUrl.replace(
@@ -90,12 +90,14 @@ export const RegisterPage: React.FC = () => {
     const isInvalid = touched[field] && !value;
 
     if (isInvalid) {
-      return `w-full px-4 py-2.5 ${field === "password" ? "pr-12" : ""
-        } bg-white/50 border-2 border-red-400 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-red-400 [&:focus]:shadow-none`;
+      return `w-full px-4 py-2.5 ${
+        field === "password" ? "pr-12" : ""
+      } bg-white/50 border-2 border-red-400 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-red-400 [&:focus]:shadow-none`;
     }
 
-    return `w-full px-4 py-2.5 ${field === "password" ? "pr-12" : ""
-      } bg-white/50 border-2 border-slate-300 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-emerald-500 [&:focus]:shadow-none`;
+    return `w-full px-4 py-2.5 ${
+      field === "password" ? "pr-12" : ""
+    } bg-white/50 border-2 border-slate-300 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-emerald-500 [&:focus]:shadow-none`;
   };
 
   return (

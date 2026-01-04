@@ -87,8 +87,12 @@ export const ProfilePage: React.FC = () => {
               <User className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-gray-800 truncate">User Profile</h1>
-              <p className="text-gray-600 text-sm sm:text-base truncate">{user?.email}</p>
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-800 truncate">
+                User Profile
+              </h1>
+              <p className="text-gray-600 text-sm sm:text-base truncate">
+                {user?.email}
+              </p>
             </div>
           </div>
 
