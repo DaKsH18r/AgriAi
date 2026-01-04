@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { getApiBaseUrl } from "../config/api";
 import {
   LogIn,
   Mail,
@@ -176,11 +177,7 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              const apiUrl = import.meta.env.VITE_API_BASE_URL;
-              if (!apiUrl) {
-                console.error("VITE_API_BASE_URL is not configured");
-                return;
-              }
+              const apiUrl = getApiBaseUrl();
               window.location.href = `${apiUrl.replace(
                 "/api",
                 ""

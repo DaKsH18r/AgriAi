@@ -52,8 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [loading, setLoading] = useState(true);
 
-  // API base URL - configured via environment variables
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+  // API base URL - configured via centralized config
 
   // Fetch current user on mount if token exists
   useEffect(() => {
