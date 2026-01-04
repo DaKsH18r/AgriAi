@@ -2,7 +2,10 @@ export const getApiBaseUrl = (): string => {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
 
   if (envUrl) {
-    return envUrl;
+    // Remove trailing slash if present
+    const cleanUrl = envUrl.replace(/\/$/, '');
+    // Return with /api appended
+    return `${cleanUrl}/api`;
   }
 
   if (typeof window !== "undefined") {
