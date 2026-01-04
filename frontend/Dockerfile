@@ -1,29 +1,34 @@
-# Frontend Dockerfile - React + Vite
+# Frontend Dockerfile - React + Vite + Nginx
 FROM node:20-alpine as builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files and npm config
+# Copy package files
 COPY package.json package-lock.json .npmrc ./
 
 # Install dependencies
 RUN npm ci
 
-# Copy application code
+# Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build
 
-# Production stage - Use Nginx to serve static files
+# Production stage - Nginx with envsubst
 FROM nginx:alpine
 
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Install envsubst (part of gettext)
+RUN apk add --no-cache gettext
 
-# Copy built files from builder stage
+# Copy nginx template
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+
+# Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Set default backend URL (can be overridden by environment variable)
+ENV BACKEND_URL=http://backend:8000
 
 # Expose port
 EXPOSE 80
@@ -32,5 +37,5 @@ EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx with envsubst processing
+CMD ["/bin/sh", "-c", "envsubst '${BACKEND_URL}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"]
