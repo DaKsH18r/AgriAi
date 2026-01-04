@@ -33,8 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
       url: window.location.href,
     };
 
-    const apiUrl =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || "/api";
     fetch(`${apiUrl.replace("/api", "")}/api/errors/client`, {
       method: "POST",
       headers: {

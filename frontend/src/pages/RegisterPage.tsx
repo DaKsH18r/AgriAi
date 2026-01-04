@@ -71,8 +71,11 @@ export const RegisterPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    const apiUrl =
-      import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
+    const apiUrl = import.meta.env.VITE_API_BASE_URL;
+    if (!apiUrl) {
+      console.error('VITE_API_BASE_URL is not configured');
+      return;
+    }
     window.location.href = `${apiUrl.replace(
       "/api",
       ""
