@@ -3,7 +3,7 @@ export const getApiBaseUrl = (): string => {
 
   if (envUrl) {
     // Remove trailing slash if present
-    const cleanUrl = envUrl.replace(/\/$/, "");
+    const cleanUrl = envUrl.replace(/\/$/, '');
     // Return with /api appended
     return `${cleanUrl}/api`;
   }
