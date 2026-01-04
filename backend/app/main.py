@@ -182,7 +182,7 @@ async def startup_event():
         # Start scheduler if not in testing
         if settings.ENVIRONMENT != "testing":
             try:
-                setup_scheduler(get_app_session)
+                scheduler_service.start()
                 logger.info("Autonomous agent scheduler started successfully")
                 logger.info("Background jobs configured:")
                 logger.info("  - Price monitoring: Running continuously")
@@ -200,17 +200,23 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    try:
-        if settings.ENVIRONMENT != "testing":
-            logger.info("Shutting down autonomous agent scheduler...")
-            shutdown_scheduler()
-            logger.info("Scheduler shutdown complete")
-            
-            # Close cache connection
+    logger.info("Shutting down Agriculture AI Platform...")
+    
+    if settings.ENVIRONMENT != "testing":
+        try:
+            if scheduler_service.is_running:
+                scheduler_service.stop()
+                logger.info("Scheduler stopped successfully")
+        except Exception as e:
+            logger.warning(f"Scheduler shutdown warning: {str(e)}")
+        
+        try:
             cache_manager.close()
             logger.info("Cache connection closed")
-    except Exception as e:
-        logger.error("Error during shutdown", exc_info=e)
+        except Exception as e:
+            logger.warning(f"Cache cleanup warning: {str(e)}")
+    
+    logger.info("Shutdown complete")
 
 @app.get("/")
 def read_root():
