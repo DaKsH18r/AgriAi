@@ -19,8 +19,9 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 ENV PORT=80
 ENV BACKEND_URL=http://backend:8000
+ENV DOLLAR=$
 
 EXPOSE 80
 
-# Simple startup - envsubst then nginx
-CMD /bin/sh -c "envsubst '\$PORT \$BACKEND_URL' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+# envsubst replaces PORT, BACKEND_URL, and DOLLAR (for escaping nginx variables)
+CMD /bin/sh -c "envsubst '\$PORT \$BACKEND_URL \$DOLLAR' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
