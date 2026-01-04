@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { getApiBaseUrl } from "../config/api";
 import {
   UserPlus,
   AlertCircle,
