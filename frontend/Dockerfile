@@ -2,7 +2,6 @@
 FROM node:20-alpine as builder
 
 WORKDIR /app
-
 COPY package.json package-lock.json .npmrc ./
 RUN npm ci
 COPY . .
@@ -11,17 +10,16 @@ RUN npm run build
 # Production stage
 FROM nginx:alpine
 
-RUN apk add --no-cache gettext
 RUN rm /etc/nginx/conf.d/default.conf
 
-COPY nginx.conf.template /etc/nginx/nginx.conf.template
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-ENV PORT=80
-ENV BACKEND_URL=http://backend:8000
-ENV DOLLAR=$
+ENV PORT=8080
+ENV BACKEND_URL=https://agriai-production-3a70.up.railway.app
+ENV BACKEND_HOST=agriai-production-3a70.up.railway.app
 
-EXPOSE 80
+EXPOSE 8080
 
-# envsubst replaces PORT, BACKEND_URL, and DOLLAR (for escaping nginx variables)
-CMD /bin/sh -c "envsubst '\$PORT \$BACKEND_URL \$DOLLAR' < /etc/nginx/nginx.conf.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+CMD ["/start.sh"]
