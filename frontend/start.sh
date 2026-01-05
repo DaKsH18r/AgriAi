@@ -1,39 +1,33 @@
 #!/bin/sh
 
-# Generate nginx config from environment variables
-cat > /etc/nginx/conf.d/default.conf << EOF
+# Generate nginx config
+cat > /etc/nginx/conf.d/default.conf << 'NGINX_CONF'
+resolver 8.8.8.8 valid=30s;
+
 server {
-    listen ${PORT:-8080};
+    listen 8080;
     server_name _;
     
     root /usr/share/nginx/html;
     index index.html;
 
     gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/x-javascript application/javascript application/xml+rss application/json;
-
-    add_header X-Frame-Options "DENY" always;
-    add_header X-Content-Type-Options "nosniff" always;
+    gzip_types text/plain text/css application/json application/javascript;
 
     location / {
-        try_files \$uri \$uri/ /index.html;
+        try_files $uri $uri/ /index.html;
     }
 
-    location /api {
-        proxy_pass ${BACKEND_URL};
+    location /api/ {
+        set $backend "https://agriai-production-3a70.up.railway.app";
+        proxy_pass $backend;
         proxy_http_version 1.1;
         proxy_ssl_server_name on;
-        proxy_set_header Host ${BACKEND_HOST:-agriai-production-3a70.up.railway.app};
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_cache_bypass \$http_upgrade;
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
+        proxy_set_header Host agriai-production-3a70.up.railway.app;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_connect_timeout 30s;
         proxy_read_timeout 60s;
     }
 
@@ -41,10 +35,6 @@ server {
         return 200 "ok";
     }
 }
-EOF
-
-echo "=== Generated nginx config ==="
-cat /etc/nginx/conf.d/default.conf
-echo "=== Starting nginx ==="
+NGINX_CONF
 
 exec nginx -g 'daemon off;'
