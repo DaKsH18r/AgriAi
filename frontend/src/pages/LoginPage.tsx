@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { getApiBaseUrl } from "../config/api";
 import {
   LogIn,
   Mail,
@@ -177,11 +176,8 @@ export const LoginPage: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              const apiUrl = getApiBaseUrl();
-              window.location.href = `${apiUrl.replace(
-                "/api",
-                ""
-              )}/api/v1/auth/google/login`;
+              const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+              window.location.href = `${backendUrl.replace(/\/$/, "")}/api/v1/auth/google/login`;
             }}
             className="w-full flex items-center justify-center gap-3 px-6 py-2.5 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all text-sm"
             title="Google login may not work in Docker environment. Use email/password login instead."

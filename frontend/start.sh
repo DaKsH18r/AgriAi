@@ -1,27 +1,30 @@
 #!/bin/sh
 set -e
 
-echo "Starting nginx on port 80"
+echo "Starting nginx on port 80 - static files only"
 
 cat > /etc/nginx/conf.d/default.conf << 'EOF'
 server {
     listen 80;
     root /usr/share/nginx/html;
     index index.html;
-    
+
+    # Gzip compression
+    gzip on;
+    gzip_types text/plain text/css application/json application/javascript;
+
+    # SPA routing - all routes serve index.html
     location / {
         try_files $uri $uri/ /index.html;
     }
-    
-    location /api/ {
-        proxy_pass https://agriai-production-3a70.up.railway.app;
-        proxy_http_version 1.1;
-        proxy_ssl_server_name on;
-        proxy_set_header Host agriai-production-3a70.up.railway.app;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    # Health check
+    location /health {
+        return 200 "ok";
     }
 }
 EOF
 
+echo "Nginx config:"
+cat /etc/nginx/conf.d/default.conf
 exec nginx -g 'daemon off;'

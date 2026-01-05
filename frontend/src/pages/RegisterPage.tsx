@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { getApiBaseUrl } from "../config/api";
 import {
   UserPlus,
   AlertCircle,
@@ -72,11 +71,8 @@ export const RegisterPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    const apiUrl = getApiBaseUrl();
-    window.location.href = `${apiUrl.replace(
-      "/api",
-      ""
-    )}/api/v1/auth/google/login`;
+    const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+    window.location.href = `${backendUrl.replace(/\/$/, "")}/api/v1/auth/google/login`;
   };
 
   const handleBlur = (field: string) => {
@@ -87,14 +83,12 @@ export const RegisterPage: React.FC = () => {
     const isInvalid = touched[field] && !value;
 
     if (isInvalid) {
-      return `w-full px-4 py-2.5 ${
-        field === "password" ? "pr-12" : ""
-      } bg-white/50 border-2 border-red-400 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-red-400 [&:focus]:shadow-none`;
+      return `w-full px-4 py-2.5 ${field === "password" ? "pr-12" : ""
+        } bg-white/50 border-2 border-red-400 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-red-400 [&:focus]:shadow-none`;
     }
 
-    return `w-full px-4 py-2.5 ${
-      field === "password" ? "pr-12" : ""
-    } bg-white/50 border-2 border-slate-300 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-emerald-500 [&:focus]:shadow-none`;
+    return `w-full px-4 py-2.5 ${field === "password" ? "pr-12" : ""
+      } bg-white/50 border-2 border-slate-300 rounded-lg transition-all text-slate-900 placeholder-slate-400 text-sm [&:focus]:outline-none [&:focus]:ring-0 [&:focus]:border-emerald-500 [&:focus]:shadow-none`;
   };
 
   return (
