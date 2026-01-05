@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import { BACKEND_BASE_URL } from "../config/api";
 import {
   UserPlus,
   AlertCircle,
@@ -71,8 +72,7 @@ export const RegisterPage: React.FC = () => {
   };
 
   const handleGoogleSignup = () => {
-    const backendUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
-    window.location.href = `${backendUrl.replace(/\/$/, "")}/api/v1/auth/google/login`;
+    window.location.href = `${BACKEND_BASE_URL}/api/v1/auth/google/login`;
   };
 
   const handleBlur = (field: string) => {
