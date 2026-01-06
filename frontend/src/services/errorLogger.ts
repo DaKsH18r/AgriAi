@@ -3,6 +3,8 @@
  * Centralized error logging for production monitoring
  */
 
+import { API_BASE_URL } from '../config/api';
+
 interface ErrorLog {
     message: string;
     stack?: string;
@@ -17,8 +19,7 @@ class ErrorLogger {
     private apiUrl: string;
 
     constructor() {
-        // Import dynamically to avoid circular dependency issues
-        this.apiUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") + "/api" || "";
+        this.apiUrl = API_BASE_URL;
     }
 
     /**

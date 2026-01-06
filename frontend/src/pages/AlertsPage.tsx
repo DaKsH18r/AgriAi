@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { logger } from "../utils/logger";
+import { API_BASE_URL } from "../config/api";
 
 interface PriceAlert {
   id: string;
@@ -38,8 +39,6 @@ export const AlertsPage: React.FC = () => {
     notification_method: "EMAIL",
   });
 
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
-
   const fetchAlerts = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
@@ -52,7 +51,7 @@ export const AlertsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [API_BASE_URL]);
+  }, []);
 
   useEffect(() => {
     fetchAlerts();

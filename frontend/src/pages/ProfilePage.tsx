@@ -12,6 +12,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import axios from "axios";
+import { API_BASE_URL } from "../config/api";
 
 export const ProfilePage: React.FC = () => {
   const { user, token } = useAuth();
@@ -29,8 +30,6 @@ export const ProfilePage: React.FC = () => {
   });
 
   const [cropInput, setCropInput] = useState("");
-
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
 
   const languages = [
     { code: "en", name: "English" },

@@ -2,6 +2,7 @@ import { Component } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { logger } from "../utils/logger";
+import { API_BASE_URL } from "../config/api";
 
 interface Props {
   children: ReactNode;
@@ -33,8 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
       url: window.location.href,
     };
 
-    const apiUrl = import.meta.env.VITE_API_BASE_URL || "/api";
-    fetch(`${apiUrl.replace("/api", "")}/api/errors/client`, {
+    fetch(`${API_BASE_URL}/errors/client`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

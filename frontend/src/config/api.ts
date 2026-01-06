@@ -1,13 +1,12 @@
 // Production-safe API configuration
-// VITE_API_BASE_URL MUST be set in environment (e.g., https://agriai-production-3a70.up.railway.app)
+// This configuration NEVER crashes the app, even if VITE_API_BASE_URL is missing.
+// Priority order:
+// 1. VITE_API_BASE_URL (if set at build time)
+// 2. Production backend URL (hardcoded fallback)
 
-const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
-
-if (!rawApiBaseUrl) {
-  throw new Error(
-    "VITE_API_BASE_URL is not configured. Set it in your environment variables."
-  );
-}
+const rawApiBaseUrl =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://agriai-production-3a70.up.railway.app";
 
 // Clean URL: remove trailing slash
 export const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, "") + "/api";
