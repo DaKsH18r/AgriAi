@@ -73,22 +73,26 @@ app.add_middleware(
     https_only=settings.ENVIRONMENT == "production"  # Enable HTTPS in production
 )
 
-# CORS - Allow multiple origins for development
+# CORS - Production-grade configuration with explicit origins
 CORS_ORIGINS = [
+    # Development origins
     "http://localhost",
     "http://127.0.0.1",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
+    # Production frontend URL
+    "https://affectionate-blessing-production-8047.up.railway.app",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,  # Allow all dev ports
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=CORS_ORIGINS,  # Explicit origins (no wildcards for security)
+    allow_credentials=True,  # Required for authenticated requests
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+    expose_headers=["*"],  # Expose all response headers
 )
 
 
