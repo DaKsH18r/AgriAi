@@ -6,7 +6,7 @@
 
 const rawApiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ||
-  "https://agriai-production-3a70.up.railway.app";
+  "https://agriai-production-43ef.up.railway.app";
 
 // Clean URL: remove trailing slash
 export const API_BASE_URL = rawApiBaseUrl.replace(/\/$/, "") + "/api";
